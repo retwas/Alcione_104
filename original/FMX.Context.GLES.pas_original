@@ -150,7 +150,7 @@ uses
 {$IFDEF MACOS}
   Macapi.CoreFoundation,
 {$ENDIF}
-  FMX.Consts, FMX.Canvas.GPU, FMX.Materials, FMX.Utils, ALfmxTypes3D;
+  FMX.Consts, FMX.Canvas.GPU, FMX.Materials, FMX.Utils;
 
 type
   TOpenGlErrorReporting = (Strict, SkipWarnings);
@@ -916,18 +916,11 @@ begin
   begin
     if AType = GL_FRAGMENT_SHADER then
     begin
-      if (length(ACode) = 0) or (ACode[0] <> $23 {'#'}) then begin  // https://quality.embarcadero.com/browse/RSP-16829
-        SetLength(code, Length(GLESHeaderHigh) + Length(ACode));
-        for I := 0 to High(GLESHeaderHigh) do
-          code[I] := GLESHeaderHigh[I];
-        for I := 0 to High(ACode) do
-          code[Length(GLESHeaderHigh) + I] := ACode[I];
-      end
-      else begin
-        SetLength(code, Length(ACode));
-        for I := 0 to High(ACode) do
-          code[I] := ACode[I];
-      end;
+      SetLength(code, Length(GLESHeaderHigh) + Length(ACode));
+      for I := 0 to High(GLESHeaderHigh) do
+        code[I] := GLESHeaderHigh[I];
+      for I := 0 to High(ACode) do
+        code[Length(GLESHeaderHigh) + I] := ACode[I];
     end else begin
       SetLength(code, Length(ACode));
       for I := 0 to High(ACode) do
@@ -1210,13 +1203,8 @@ begin
 
         if Texture = nil then
           glBindTexture(GL_TEXTURE_2D, 0)
-        else begin
-          {$IF defined(ANDROID)}
-          if (Texture is TalTexture) and (TalTexture(Texture).material is TALCanvasExternalOESTextureMaterial) then glBindTexture(GL_TEXTURE_EXTERNAL_OES, Texture.Handle)  // << https://quality.embarcadero.com/browse/RSP-16830
         else
-          {$ENDIF}
           glBindTexture(GL_TEXTURE_2D, Texture.Handle);
-        end;
 
         glUniform1i(Variable.Index, Variable.TextureUnit);
         glActiveTexture(GL_TEXTURE0);

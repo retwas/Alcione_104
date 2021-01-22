@@ -100,8 +100,6 @@ type
     FRunning: Boolean;
     FTerminating: Boolean;
     FTitle: string;
-    fPause: Boolean; //https://quality.embarcadero.com/browse/RSP-18686
-    fLostFocus: Boolean; //https://quality.embarcadero.com/browse/RSP-18686
     procedure CheckOrientationChange;
     procedure RegisterWakeMainThread;
     procedure UnregisterWakeMainThread;
@@ -158,7 +156,7 @@ type
 
 var
   PlatformAndroid: TPlatformAndroid;
-  // IsWillBecomeInactiveInvoked: Boolean; => https://quality.embarcadero.com/browse/RSP-18686
+  IsWillBecomeInactiveInvoked: Boolean;
 
 function WindowHandleToPlatform(const AHandle: TWindowHandle): TAndroidWindowHandle;
 function MainActivity: JFMXNativeActivity;
@@ -199,8 +197,6 @@ end;
 constructor TPlatformAndroid.Create;
 begin
   inherited;
-  fPause := False; //https://quality.embarcadero.com/browse/RSP-18686
-  fLostFocus := false; //https://quality.embarcadero.com/browse/RSP-18686
   BindAppGlueEvents;
 
   { Creates core services }
@@ -221,7 +217,7 @@ begin
   Application := TApplication.Create(nil);
   FFirstRun := True;
   FRunning := False;
-  // IsWillBecomeInactiveInvoked := False; => https://quality.embarcadero.com/browse/RSP-18686
+  IsWillBecomeInactiveInvoked := False;
   FActivityListener := TFMXNativeActivityListener.Create;
   MainActivity.setListener(FActivityListener);
   FMainThreadWakeup := TMainThreadWakeup.Create;
@@ -504,29 +500,35 @@ begin
         end;
       end;
 
-    //onResume() gets called just before your activity gets focus
-    TAndroidApplicationCommand.Resume: begin
-      fPause := False;
+    TAndroidApplicationCommand.Resume:
+    begin
+      IsWillBecomeInactiveInvoked := False;
       HandleApplicationEvent(TApplicationEvent.WillBecomeForeground);
-      if not fLostFocus then HandleApplicationEvent(TApplicationEvent.BecameActive); // << https://quality.embarcadero.com/browse/RSP-18686
     end;
 
-    //and onPause gets called just before it loses focus
-    TAndroidApplicationCommand.Pause: begin
-      fPause := True;
-      if not fLostFocus then HandleApplicationEvent(TApplicationEvent.WillBecomeInactive); // << https://quality.embarcadero.com/browse/RSP-18686
+    TAndroidApplicationCommand.Pause:
+    begin
+      // Unfortunately the Android doesn't guarantee the sequence of calls LostFocus -> Pause. Different OS version
+      // has different sequence of calls (LostFocus -> Pause, Pause -> LostFocus). But in FMX we guarantee
+      // WillBecomeInactive -> EnteredBackground, so we introduced FIsWillBecomeInactiveInvoked for unification of
+      // sequence call.
+      if not IsWillBecomeInactiveInvoked then
+      begin
+        HandleApplicationEvent(TApplicationEvent.WillBecomeInactive);
+        IsWillBecomeInactiveInvoked := True;
+      end;
       HandleApplicationEvent(TApplicationEvent.EnteredBackground);
     end;
 
-    TAndroidApplicationCommand.GainedFocus: begin
-      fLostFocus := False;
+    TAndroidApplicationCommand.GainedFocus:
       HandleApplicationEvent(TApplicationEvent.BecameActive);
-    end;
 
-    TAndroidApplicationCommand.LostFocus: begin
-      fLostFocus := True;
-      if not fPause then HandleApplicationEvent(TApplicationEvent.WillBecomeInactive); // << https://quality.embarcadero.com/browse/RSP-18686
-    end;
+    TAndroidApplicationCommand.LostFocus:
+      if not IsWillBecomeInactiveInvoked then
+      begin
+        HandleApplicationEvent(TApplicationEvent.WillBecomeInactive);
+        IsWillBecomeInactiveInvoked := True;
+      end;
 
     TAndroidApplicationCommand.SaveState:
       TMessageManager.DefaultManager.SendMessage(Self, TSaveStateMessage.Create);

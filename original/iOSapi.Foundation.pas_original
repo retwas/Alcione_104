@@ -1651,10 +1651,6 @@ type
     procedure performSelectorOnMainThread(aSelector: SEL; withObject: Pointer; waitUntilDone: Boolean;
       modes: NSArray); cdecl;
     function respondsToSelector(aSelector: SEL): Boolean; cdecl;
-    [MethodName('setValue:forKey:')] // https://quality.embarcadero.com/browse/RSP-19877
-    procedure setValueforKey(value: Pointer; forKey: NSString); cdecl; // https://quality.embarcadero.com/browse/RSP-19877
-    [MethodName('setValue:forKeyPath:')] // https://quality.embarcadero.com/browse/RSP-19877
-    procedure setValueforKeyPath(value: Pointer; forKeyPath: NSString); cdecl; // https://quality.embarcadero.com/browse/RSP-19877
   end;
   TNSObject = class(TOCGenericImport<NSObjectClass, NSObject>) end;
 
@@ -5503,27 +5499,7 @@ type
       downloadTask: NSURLSessionDownloadTask; didResumeAtOffset: Int64; expectedTotalBytes: Int64); cdecl;
   end;
 
-  //https://quality.embarcadero.com/browse/RSP-28096
-  NSPersonNameComponentsClass = interface(NSObjectClass)
-    ['{2EDFEAC4-A0B4-4BB2-BAD9-4581B92DA4C7}']
-  end;
-  NSPersonNameComponents = interface(NSObject)
-    ['{821B6CD5-BE9B-4708-928B-FD5CE5D12788}']
-    procedure setNamePrefix(namePrefix: NSString); cdecl;
-    function namePrefix : NSString; cdecl;
-    procedure setGivenName(givenName: NSString); cdecl;
-    function givenName : NSString; cdecl;
-    procedure setMiddleName(middleName: NSString); cdecl;
-    function middleName : NSString; cdecl;
-    procedure setFamilyName(familyName: NSString); cdecl;
-    function familyName : NSString; cdecl;
-    procedure setNameSuffix(nameSuffix: NSString); cdecl;
-    function nameSuffix : NSString; cdecl;
-    procedure setNickname(nickname: NSString); cdecl;
-    function nickname : NSString; cdecl;
-    procedure setPhoneticRepresentation(phoneticRepresentation: NSPersonNameComponents); cdecl;
-    function phoneticRepresentation : NSPersonNameComponents; cdecl;
-  end;
+
 
 // Convenience method for creating an NSString from a Delphi Unicode string
 function NSSTR(const Str: string): NSString; inline; deprecated 'use StrToNSStr instead';
@@ -5712,24 +5688,6 @@ begin
   end;
 end;
 
-//https://quality.embarcadero.com/browse/RSP-23241
-function GetFrameworkDic: TDictionary<string, THandle>;
-var
-  LFrameworkDic: TDictionary<string, THandle>;
-begin
-  if FrameworkDic = nil then
-  begin
-    LFrameworkDic := TDictionary<string, THandle>.Create;
-    if AtomicCmpExchange(Pointer(FrameworkDic), Pointer(LFrameworkDic), nil) <> nil then
-      LFrameworkDic.Free
-{$IFDEF AUTOREFCOUNT}
-    else
-      FrameworkDic.__ObjAddRef
-{$ENDIF AUTOREFCOUNT};
-  end;
-  Result := FrameworkDic;
-end;
-
 function CocoaIntegerConst(const Fwk: string; const ConstStr: string): Integer;
 var
   Obj: Pointer;
@@ -5744,22 +5702,18 @@ end;
 function CocoaPointerConst(const Fwk: string; const ConstStr: string): Pointer;
 var
   FrameworkMod: HMODULE;
-  LFrameworkDic: TDictionary<string, THandle>; //https://quality.embarcadero.com/browse/RSP-23241
 begin
+  if FrameworkDic = nil then
+    FrameworkDic := TDictionary<string, THandle>.Create;
+
   Result := nil;
   FrameworkMod := 0;
 
-  LFrameworkDic := GetFrameworkDic; //
-  Tmonitor.Enter(LFrameworkDic);    //https://quality.embarcadero.com/browse/RSP-23241
-  try                               //
-    if not LFrameworkDic.TryGetValue(Fwk, FrameworkMod) then
-    begin
-      FrameworkMod := LoadLibrary(PWideChar(Fwk));
-      LFrameworkDic.Add(Fwk, FrameworkMod);
-    end;
-  finally                         //
-    Tmonitor.exit(LFrameworkDic); //https://quality.embarcadero.com/browse/RSP-23241
-  end;                            //
+  if not FrameworkDic.TryGetValue(Fwk, FrameworkMod) then
+  begin
+    FrameworkMod := LoadLibrary(PWideChar(Fwk));
+    FrameworkDic.Add(Fwk, FrameworkMod);
+  end;
 
   if FrameworkMod <> 0 then
     Result := GetProcAddress(FrameworkMod, PWideChar(ConstStr));

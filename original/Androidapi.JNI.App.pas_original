@@ -16,8 +16,7 @@ uses
   Androidapi.JNI.JavaTypes,
   Androidapi.JNI.Os,
   Androidapi.JNI.Util,
-  Androidapi.JNI.Widget,
-  Androidapi.JNI.Net; // https://quality.embarcadero.com/browse/RSP-21294
+  Androidapi.JNI.Widget;
 
 type
 // ===== Forward declarations =====
@@ -76,20 +75,6 @@ type
   JAppWidgetProviderInfo = interface;//android.appwidget.AppWidgetProviderInfo
 
 // ===== Interface declarations =====
-
-  // https://quality.embarcadero.com/browse/RSP-21294
-  // This dummy class is just to avoid circular reference
-  JAudioAttributesClass = interface(JObjectClass)
-    ['{FDBDFCB3-4B3F-4E1B-9007-4E5B9EA6546A}']
-  end;
-
-  // https://quality.embarcadero.com/browse/RSP-21294
-  // This dummy class is just to avoid circular reference
-  [JavaSignature('android/media/AudioAttributes')]
-  JAudioAttributes = interface(JObject)
-    ['{CEC09B65-8360-46BD-A5E8-780E4927C9AA}']
-  end;
-  TJAudioAttributes = class(TJavaGenericImport<JAudioAttributesClass, JAudioAttributes>) end;
 
   JActionBarClass = interface(JObjectClass)
     ['{C1A41981-8687-4794-91A5-AA384F60A546}']
@@ -1484,7 +1469,7 @@ type
 
   JNotificationClass = interface(JObjectClass)
     ['{4584515F-7E22-49A9-A55B-A6DE3BFD7E1C}']
-    {class} function _GetAUDIO_ATTRIBUTES_DEFAULT: JAudioAttributes; cdecl; // https://quality.embarcadero.com/browse/RSP-21296
+    //{class} function _GetAUDIO_ATTRIBUTES_DEFAULT: JAudioAttributes; cdecl;
     {class} function _GetBADGE_ICON_LARGE: Integer; cdecl;
     {class} function _GetBADGE_ICON_NONE: Integer; cdecl;
     {class} function _GetBADGE_ICON_SMALL: Integer; cdecl;
@@ -1568,7 +1553,7 @@ type
     {class} function init: JNotification; cdecl; overload;
     {class} function init(icon: Integer; tickerText: JCharSequence; when: Int64): JNotification; cdecl; overload;//Deprecated
     {class} function init(parcel: JParcel): JNotification; cdecl; overload;
-    {class} property AUDIO_ATTRIBUTES_DEFAULT: JAudioAttributes read _GetAUDIO_ATTRIBUTES_DEFAULT; // https://quality.embarcadero.com/browse/RSP-21296
+    //{class} property AUDIO_ATTRIBUTES_DEFAULT: JAudioAttributes read _GetAUDIO_ATTRIBUTES_DEFAULT;
     {class} property BADGE_ICON_LARGE: Integer read _GetBADGE_ICON_LARGE;
     {class} property BADGE_ICON_NONE: Integer read _GetBADGE_ICON_NONE;
     {class} property BADGE_ICON_SMALL: Integer read _GetBADGE_ICON_SMALL;
@@ -1828,7 +1813,7 @@ type
     procedure setLockscreenVisibility(lockscreenVisibility: Integer); cdecl;
     procedure setName(name: JCharSequence); cdecl;
     procedure setShowBadge(showBadge: Boolean); cdecl;
-    procedure setSound(sound: Jnet_Uri; audioAttributes: JAudioAttributes); cdecl; // https://quality.embarcadero.com/browse/RSP-21294
+    //procedure setSound(sound: Jnet_Uri; audioAttributes: JAudioAttributes); cdecl;
     procedure setVibrationPattern(vibrationPattern: TJavaArray<Int64>); cdecl;
     function shouldShowLights: Boolean; cdecl;
     function shouldVibrate: Boolean; cdecl;
@@ -2291,7 +2276,6 @@ implementation
 
 procedure RegisterTypes;
 begin
-  TRegTypes.RegisterType('Androidapi.JNI.App.JAudioAttributes', TypeInfo(Androidapi.JNI.App.JAudioAttributes)); // dummy class to avoid circular reference - https://quality.embarcadero.com/browse/RSP-21294
   TRegTypes.RegisterType('Androidapi.JNI.App.JActionBar', TypeInfo(Androidapi.JNI.App.JActionBar));
   TRegTypes.RegisterType('Androidapi.JNI.App.JActionBar_LayoutParams', TypeInfo(Androidapi.JNI.App.JActionBar_LayoutParams));
   TRegTypes.RegisterType('Androidapi.JNI.App.JActionBar_OnMenuVisibilityListener', TypeInfo(Androidapi.JNI.App.JActionBar_OnMenuVisibilityListener));

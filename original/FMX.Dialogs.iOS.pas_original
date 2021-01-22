@@ -242,7 +242,7 @@ begin
   try
     AlertView := TUIAlertView.Wrap(AlertView.initWithTitle(StrToNSStr(Translate(MsgTitles[ADialogType])), StrToNSStr(AMessage),
       Delegate.GetObjectID, nil, nil));
-    for B := High(TMsgDlgBtn) downto Low(TMsgDlgBtn) do // https://quality.embarcadero.com/browse/RSP-15971
+    for B := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
       if B in AButtons then
         AlertView.addButtonWithTitle(StrToNSStr(Translate(ButtonCaptions[B])));
     AlertView.Show;
@@ -276,7 +276,7 @@ begin
   AlertView := TUIAlertView.Alloc;
   AlertView := TUIAlertView.Wrap(AlertView.initWithTitle(StrToNSStr(Translate(MsgTitles[ADialogType])), StrToNSStr(AMessage),
     Delegate.GetObjectID, nil, nil));
-  for B := High(TMsgDlgBtn) downto Low(TMsgDlgBtn) do // https://quality.embarcadero.com/browse/RSP-15971
+  for B := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
     if B in AButtons then
       AlertView.addButtonWithTitle(StrToNSStr(Translate(ButtonCaptions[B])));
   AlertView.Show;
@@ -355,7 +355,7 @@ begin
   try
     AlertView := TUIAlertView.Wrap(AlertView.initWithTitle(StrToNSStr(Translate(MsgTitles[ADialogType])), StrToNSStr(AMessage),
       Delegate.GetObjectID, nil, nil));
-    for B := High(TMsgDlgBtn) downto Low(TMsgDlgBtn) do // https://quality.embarcadero.com/browse/RSP-15971
+    for B := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
       if B in AButtons then
         AlertView.addButtonWithTitle(StrToNSStr(Translate(ButtonCaptions[B])));
     AlertView.Show;
@@ -446,7 +446,7 @@ begin
   AlertView := TUIAlertView.Alloc;
   AlertView := TUIAlertView.Wrap(AlertView.initWithTitle(StrToNSStr(Translate(MsgTitles[ADialogType])), StrToNSStr(AMessage),
     Delegate.GetObjectID, nil, nil));
-  for B := High(TMsgDlgBtn) downto Low(TMsgDlgBtn) do // https://quality.embarcadero.com/browse/RSP-15971
+  for B := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
     if B in AButtons then
       AlertView.addButtonWithTitle(StrToNSStr(Translate(ButtonCaptions[B])));
   AlertView.Show;
@@ -547,7 +547,7 @@ begin
   inherited Create;
   FParentList := nil;
   FInputCloseQueryProc := AInputCloseQueryProc;
-  for B := High(TMsgDlgBtn) downto Low(TMsgDlgBtn) do // https://quality.embarcadero.com/browse/RSP-15971
+  for B := Low(TMsgDlgBtn) to High(TMsgDlgBtn) do
     if B in AButtons then
     begin
       SetLength(FResults, Length(FResults) + 1);

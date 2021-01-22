@@ -11,7 +11,6 @@ unit FMX.Filter;
 
 interface
 
-{$HINTS OFF}
 {$SCOPEDENUMS ON}
 
 uses
@@ -569,7 +568,7 @@ begin
     begin
       if CompareText(FValues[I].Name, 'Output') = 0 then
       begin
-        if not FProcessing and FModified then
+        if not FProcessing and FModified then 
           Apply;
         Result := TFilterManager.GetTexture(FPass);
         FValues[I].Value := Result;
@@ -800,19 +799,17 @@ end;
 
 function TFilter.InputTexture: TTexture;
 begin
-  //https://quality.embarcadero.com/browse/RSP-20825
-  //if TCanvasStyle.NeedGPUSurface in TCanvasManager.DefaultCanvas.GetCanvasStyle then
-  //  Result := TContextManager.DefaultContextClass.BitmapToTexture(FInputBitmap)
-  //else
+  if TCanvasStyle.NeedGPUSurface in TCanvasManager.DefaultCanvas.GetCanvasStyle then
+    Result := TContextManager.DefaultContextClass.BitmapToTexture(FInputBitmap)
+  else
     Result := FInput;
 end;
 
 function TFilter.TargetTexture: TTexture;
 begin
-  //https://quality.embarcadero.com/browse/RSP-20825
-  //if TCanvasStyle.NeedGPUSurface in TCanvasManager.DefaultCanvas.GetCanvasStyle then
-  //  Result := TContextManager.DefaultContextClass.BitmapToTexture(FTargetBitmap)
-  //else
+  if TCanvasStyle.NeedGPUSurface in TCanvasManager.DefaultCanvas.GetCanvasStyle then
+    Result := TContextManager.DefaultContextClass.BitmapToTexture(FTargetBitmap)
+  else
     Result := FTarget;
 end;
 

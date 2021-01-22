@@ -131,11 +131,6 @@ const
   AVPlayerStatusFailed = 2;
   AVPlayerStatusReadyToPlay = 1;
   AVPlayerStatusUnknown = 0;
-  AVAuthorizationStatusNotDetermined = 0; // https://quality.embarcadero.com/browse/RSP-24300
-  AVAuthorizationStatusRestricted = 1; // https://quality.embarcadero.com/browse/RSP-24300
-  AVAuthorizationStatusDenied = 2; // https://quality.embarcadero.com/browse/RSP-24300
-  AVAuthorizationStatusAuthorized = 3; // https://quality.embarcadero.com/browse/RSP-24300
-
 
 // ===== Typedefs and structs =====
 {$M+}
@@ -160,8 +155,6 @@ type
   TAVFoundationCompletionHandler1 = procedure(param1: Boolean) of object;
   TAVFoundationHandler = procedure(param1: NSArray) of object;
   TAVFoundationCompletionHandler2 = procedure(param1: CMTime) of object;
-  AVMediaType = NSString; // https://quality.embarcadero.com/browse/RSP-24300
-  AVAuthorizationStatus = NSInteger; // https://quality.embarcadero.com/browse/RSP-24300
 
 // ===== External functions =====
 
@@ -577,9 +570,6 @@ type
     procedure setExternalPlaybackVideoGravity(externalPlaybackVideoGravity: NSString); cdecl;
     function externalPlaybackVideoGravity: NSString; cdecl;
     function outputObscuredDueToInsufficientExternalProtection: Boolean; cdecl;
-    procedure removeObserver(observer: NSObject; forKeyPath: NSString); cdecl; overload; // https://quality.embarcadero.com/browse/RSP-16857 - normally this must be as the NSObject level but too complicated to update the iOSapi.Foundation.pas file
-    procedure removeObserver(observer: NSObject; forKeyPath: NSString; context: Pointer); cdecl; overload; // https://quality.embarcadero.com/browse/RSP-16857 - normally this must be as the NSObject level but too complicated to update the iOSapi.Foundation.pas file
-    procedure addObserver(observer: NSObject; forKeyPath: NSString; options: NSKeyValueObservingOptions; context: Pointer); cdecl; // https://quality.embarcadero.com/browse/RSP-16857 - normally this must be as the NSObject level but too complicated to update the iOSapi.Foundation.pas file
   end;
   TAVPlayer = class(TOCGenericImport<AVPlayerClass, AVPlayer>)  end;
 
@@ -732,11 +722,6 @@ type
     function timedMetadata: NSArray; cdecl;
     function tracks: NSArray; cdecl;
     function videoComposition: AVVideoComposition; cdecl;
-    procedure addOutput(output: AVPlayerItemOutput); cdecl; // https://quality.embarcadero.com/browse/RSP-16853
-    procedure removeOutput(output: AVPlayerItemOutput); cdecl; // https://quality.embarcadero.com/browse/RSP-16853
-    procedure removeObserver(observer: NSObject; forKeyPath: NSString); cdecl; overload; // https://quality.embarcadero.com/browse/RSP-16857 - normally this must be as the NSObject level but too complicated to update the iOSapi.Foundation.pas file
-    procedure removeObserver(observer: NSObject; forKeyPath: NSString; context: Pointer); cdecl; overload; // https://quality.embarcadero.com/browse/RSP-16857 - normally this must be as the NSObject level but too complicated to update the iOSapi.Foundation.pas file
-    procedure addObserver(observer: NSObject; forKeyPath: NSString; options: NSKeyValueObservingOptions; context: Pointer); cdecl; // https://quality.embarcadero.com/browse/RSP-16857 - normally this must be as the NSObject level but too complicated to update the iOSapi.Foundation.pas file
   end;
   TAVPlayerItem = class(TOCGenericImport<AVPlayerItemClass, AVPlayerItem>)  end;
 
@@ -813,8 +798,6 @@ type
     {class} function deviceWithUniqueID(deviceUniqueID: NSString): Pointer; cdecl;
     {class} function devices: NSArray; cdecl;
     {class} function devicesWithMediaType(mediaType: NSString): NSArray; cdecl;
-    {class} function authorizationStatusForMediaType(mediaType: AVMediaType): AVAuthorizationStatus; cdecl; // https://quality.embarcadero.com/browse/RSP-24300
-    {class} procedure requestAccessForMediaType(mediaType: AVMediaType; completionHandler: TAVFoundationCompletionHandler1); cdecl; // https://quality.embarcadero.com/browse/RSP-24300
   end;
   AVCaptureDevice = interface(NSObject)
     ['{A8ECC90F-6016-44A4-BB84-8FB720CF786D}']

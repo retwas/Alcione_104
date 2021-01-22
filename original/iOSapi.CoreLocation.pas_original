@@ -33,7 +33,7 @@ const
   kCLAuthorizationStatusNotDetermined = 0;
   kCLAuthorizationStatusRestricted = 1;
   kCLAuthorizationStatusAuthorizedAlways  = kCLAuthorizationStatusAuthorized ;
-  kCLAuthorizationStatusAuthorizedWhenInUse = 4;
+  kCLAuthorizationStatusAuthorizedWhenInUse = 4; 
   kCLErrorDenied = 1;
   kCLErrorGeocodeCanceled = 10;
   kCLErrorGeocodeFoundNoResult = 8;
@@ -110,7 +110,6 @@ type
 
   CLPlacemark = interface;
   CLRegion = interface;
-  CLVisit = interface; // https://quality.embarcadero.com/browse/RSP-18621
   CLLocationManager = interface;
   CLGeocoder = interface;
   CLHeading = interface;
@@ -145,8 +144,6 @@ type
     procedure locationManagerDidResumeLocationUpdates(manager: CLLocationManager); cdecl;
     [MethodName('locationManager:didFinishDeferredUpdatesWithError:')]
     procedure locationManagerDidFinishDeferredUpdatesWithError(manager: CLLocationManager; error: NSError); cdecl;
-    [MethodName('locationManager:didVisit:')]                                             // https://quality.embarcadero.com/browse/RSP-18621
-    procedure locationManagerDidVisit(manager: CLLocationManager; visit: CLVisit); cdecl; // https://quality.embarcadero.com/browse/RSP-18621
   end;
 
 // ===== Interface declarations =====
@@ -192,19 +189,6 @@ type
     function notifyOnExit : Boolean; cdecl;
   end;
   TCLRegion = class(TOCGenericImport<CLRegionClass, CLRegion>)  end;
-
-  // https://quality.embarcadero.com/browse/RSP-18621
-  CLVisitClass = interface(NSObjectClass)
-    ['{8526B69B-5AD8-4B4B-91DC-6C06474BE925}']
-  end;
-  CLVisit = interface(NSObject)
-    ['{BB121072-B081-4C90-BB85-6FCC24DF8223}']
-    function arrivalDate: NSDate; cdecl;
-    function departureDate: NSDate; cdecl;
-    function coordinate: CLLocationCoordinate2D; cdecl;
-    function horizontalAccuracy: CLLocationAccuracy; cdecl;
-  end;
-  TCLVisit = class(TOCGenericImport<CLVisitClass, CLVisit>)  end;
 
   CLLocationManagerClass = interface(NSObjectClass)
     ['{4422C248-523F-4237-8966-2A322F58A77C}']
@@ -264,8 +248,6 @@ type
     procedure stopRangingBeaconsInRegion(region: CLBeaconRegion); cdecl;
     procedure stopUpdatingHeading; cdecl;
     procedure stopUpdatingLocation; cdecl;
-    procedure startMonitoringVisits; cdecl; // https://quality.embarcadero.com/browse/RSP-18621
-    procedure stopMonitoringVisits; cdecl; // https://quality.embarcadero.com/browse/RSP-18621
   end;
   TCLLocationManager = class(TOCGenericImport<CLLocationManagerClass, CLLocationManager>)  end;
 
@@ -366,7 +348,7 @@ type
 
   CLCircularRegion = interface(CLRegion)
     ['{FF4DCF91-376B-41BB-B60A-880BEBB5B4EE}']
-    function initWithCenter(center: CLLocationCoordinate2D; radius: CLLocationDistance; identifier: pointer): Pointer; cdecl; // https://quality.embarcadero.com/browse/RSP-15717
+    function initWithCenter(center: CLLocationCoordinate2D; radius: CLLocationDistance; identifier: NSString): Pointer; cdecl;
     function center: CLLocationCoordinate2D; cdecl;
     function radius: CLLocationDistance; cdecl;
     function containsCoordinate(coordinate: CLLocationCoordinate2D): Boolean; cdecl;

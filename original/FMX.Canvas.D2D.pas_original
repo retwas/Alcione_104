@@ -103,8 +103,8 @@ type
   private
     FStateBlock: ID2D1DrawingStateBlock;
     FLayer: ID2D1Layer;
-    // FContextLostId: Integer; => https://quality.embarcadero.com/browse/RSP-19673
-    // procedure ContextLostHandler(const Sender: TObject; const Msg: TMessage); => https://quality.embarcadero.com/browse/RSP-19673
+    FContextLostId: Integer;
+    procedure ContextLostHandler(const Sender: TObject; const Msg: TMessage);
   protected
     procedure AssignTo(Dest: TPersistent); override;
   public
@@ -123,8 +123,8 @@ type
     FMapBuffer: ID3D10Texture2D;
     FWidth: Integer;
     FHeight: Integer;
-    // FContextLostId: Integer; => https://quality.embarcadero.com/browse/RSP-19673
-    // procedure ContextLostHandler(const Sender: TObject; const Msg: TMessage); => https://quality.embarcadero.com/browse/RSP-19673
+    FContextLostId: Integer;
+    procedure ContextLostHandler(const Sender: TObject; const Msg: TMessage);
   public
     constructor Create(const AWidth, AHeight: Integer; const AAccess: TMapAccess);
     destructor Destroy; override;
@@ -136,7 +136,6 @@ type
   private const
     DefaultRenderTargetMode: TD2D1RenderTargetType = D2D1_RENDER_TARGET_TYPE_DEFAULT;
   private class var
-    fLock: Tobject; // https://quality.embarcadero.com/browse/RSP-19673
     FSharedTexture: ID3D10Texture2D;
     FSharedRenderTarget: ID2D1RenderTarget;
     class function SharedRenderTarget: ID2D1RenderTarget; static;
@@ -152,7 +151,7 @@ type
     FCurrentSaveState: TD2DCanvasSaveState;
     FTarget: ID2D1RenderTarget;
     FContextHandle: THandle;
-    // FContextLostId: Integer; => https://quality.embarcadero.com/browse/RSP-19673
+    FContextLostId: Integer;
     // window
     FSwapChain: IDXGISwapChain;
     FRenderTargetView: ID3D10RenderTargetView;
@@ -168,7 +167,7 @@ type
     function CreateD2DGradientBrush(AGradient: TGradient; const ARect: TRectF; const AOpacity: Single): ID2D1Brush;
     procedure ApplyFill(const ABrush: TBrush; ARect: TRectF; const AOpacity: Single);
     procedure ApplyStroke(const AStroke: TStrokeBrush; ARect: TRectF; const AOpacity: Single);
-    // procedure ContextLostHandler(const Sender: TObject; const Msg: TMessage); => https://quality.embarcadero.com/browse/RSP-19673
+    procedure ContextLostHandler(const Sender: TObject; const Msg: TMessage);
     procedure HandleDeviceRemoved;
     function CreatePathGeometry(const APath: TPathData): ID2D1PathGeometry;
   protected
@@ -246,11 +245,11 @@ type
     FDrawTextOption: Integer;
     FMetrics: TDWriteTextMetrics;
     FOverhangMetrics: TDwriteOverhangMetrics;
-    // FContextLostId: Integer; => https://quality.embarcadero.com/browse/RSP-19673
+    FContextLostId: Integer;
     FTextRect: TRectF;
     function GetFontStyles(const AFont: TFont): TDWriteFontDescriptor;
     procedure UpdateTextRect;
-    // procedure ContextLostHandler(const Sender: TObject; const Msg: TMessage); => https://quality.embarcadero.com/browse/RSP-19673
+    procedure ContextLostHandler(const Sender: TObject; const Msg: TMessage);
     class procedure DestroyGlobalResources;
   protected
     procedure DoRenderLayout; override;
@@ -946,12 +945,12 @@ begin
   FWidth := AWidth;
   FHeight := AHeight;
   FAccess := AAccess;
-  // FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler);  => https://quality.embarcadero.com/browse/RSP-19673
+  FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler);
 end;
 
 destructor TD2DBitmapHandle.Destroy;
 begin
-  //TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId); => https://quality.embarcadero.com/browse/RSP-19673
+  TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId);
   inherited;
 end;
 
@@ -993,13 +992,12 @@ begin
   Result := FTexture;
 end;
 
-//https://quality.embarcadero.com/browse/RSP-19673
-//procedure TD2DBitmapHandle.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
-//begin
-//  FTexture := nil;
-//  FSharedBitmap := nil;
-//  FMapBuffer := nil;
-//end;
+procedure TD2DBitmapHandle.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
+begin
+  FTexture := nil;
+  FSharedBitmap := nil;
+  FMapBuffer := nil;
+end;
 
 { TCanvasD2D }
 
@@ -1011,7 +1009,7 @@ begin
   if WindowHandleToPlatform(Parent).Transparency then
     WindowHandleToPlatform(Parent).CreateBuffer(WindowHandleToPlatform(Parent).WndClientSize.Width,
       WindowHandleToPlatform(Parent).WndClientSize.Height);
-  // FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler); => https://quality.embarcadero.com/browse/RSP-19673
+  FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler);
 end;
 
 function TCanvasD2D.CreatePathGeometry(const APath: TPathData): ID2D1PathGeometry;
@@ -1065,7 +1063,7 @@ begin
   inherited;
   FLastBrushTransform := TMatrix.Identity;
   CreateResources;
-  // FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler); => https://quality.embarcadero.com/browse/RSP-19673
+  FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler);
 end;
 
 constructor TCanvasD2D.CreateFromPrinter(const APrinter: TAbstractPrinter);
@@ -1075,7 +1073,7 @@ end;
 
 destructor TCanvasD2D.Destroy;
 begin
-  // TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId); => https://quality.embarcadero.com/browse/RSP-19673
+  TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId);
   DisposeResources;
   FreeAndNil(FMetaStrokeBrush);
   FreeAndNil(FMetaStroke);
@@ -1370,39 +1368,31 @@ begin
   end;
 end;
 
-//https://quality.embarcadero.com/browse/RSP-19673
-//procedure TCanvasD2D.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
-//begin
-//  DisposeResources;
-//end;
+procedure TCanvasD2D.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
+begin
+  DisposeResources;
+end;
 
 function TCanvasD2D.DoBeginScene(const AClipRects: PClipRects; AContextHandle: THandle): Boolean;
 begin
-  Tmonitor.Enter(fLock); // https://quality.embarcadero.com/browse/RSP-19673
-  try
+  if SharedDevice.GetDeviceRemovedReason <> S_OK then
+  begin
+    HandleDeviceRemoved;
+    Exit(False);
+  end;
 
-    if SharedDevice.GetDeviceRemovedReason <> S_OK then
-    begin
-      HandleDeviceRemoved;
-      Exit(False);
-    end;
-
-    CreateResources;
-    Result := inherited DoBeginScene(AClipRects) and (FTarget <> nil);
+  CreateResources;
+  Result := inherited DoBeginScene(AClipRects) and (FTarget <> nil);
+  if Result then
+  begin
+    FCurrentSaveState := nil;
+    FContextHandle := AContextHandle;
     if Result then
     begin
-      FCurrentSaveState := nil;
-      FContextHandle := AContextHandle;
-      if Result then
-      begin
-        FTarget.BeginDraw;
-        if AClipRects <> nil then
-          SetClipRects(AClipRects^);
-      end;
+      FTarget.BeginDraw;
+      if AClipRects <> nil then
+        SetClipRects(AClipRects^);
     end;
-
-  finally
-    Tmonitor.Exit(fLock); // https://quality.embarcadero.com/browse/RSP-19673
   end;
 end;
 
@@ -1413,59 +1403,52 @@ var
   Res: HResult;
   I: Integer;
 begin
-  Tmonitor.Enter(fLock); // https://quality.embarcadero.com/browse/RSP-19673
-  try
-
-    if FTarget <> nil then
+  if FTarget <> nil then
+  begin
+    if FLayer <> nil then
     begin
-      if FLayer <> nil then
-      begin
-        FTarget.PopLayer;
-        FLayer := nil;
-      end;
-      FTarget.Flush(@T1, @T2);
-      Res := FTarget.EndDraw;
-      if Res = D2DERR_RECREATE_TARGET then
-      begin
-        HandleDeviceRemoved;
-        Exit;
-      end;
-      if (BeginSceneCount = 1) and (FSwapChain <> nil) then
-        FSwapChain.Present(0, 0);
-      if FBufferTexture <> nil then
-      begin
-        SharedDevice.CopyResource(FCopyBuffer, FBufferTexture);
-        if Succeeded(FCopyBuffer.Map(0, D3D10_MAP_READ, 0, Mapped)) then
-        try
-          if Mapped.RowPitch <> Cardinal(FBufferSize.Width * 4) then
-          begin
-            for I := 0 to FBufferSize.Height - 1 do
-              Move(PAlphaColorArray(Mapped.pData)[Cardinal(I) * (Mapped.RowPitch div 4)],
-                PAlphaColorArray(WindowHandleToPlatform(Parent).BufferBits)[I * FBufferSize.Width], FBufferSize.Width * 4);
-          end
-          else
-            Move(Mapped.pData^, WindowHandleToPlatform(Parent).BufferBits^, FBufferSize.Width * FBufferSize.Height * 4);
-        finally
-          FCopyBuffer.Unmap(0);
-        end;
-
-        // in design-time just draw buffer
-        if (WindowHandleToPlatform(Parent).Form <> nil) and
-          (csDesigning in WindowHandleToPlatform(Parent).Form.ComponentState) then
-          Winapi.Windows.BitBlt(FContextHandle, 0, 0, Width, Height, WindowHandleToPlatform(Parent).BufferHandle, 0, 0,
-            SRCCOPY);
-      end;
+      FTarget.PopLayer;
+      FLayer := nil;
     end;
-    inherited;
+    FTarget.Flush(@T1, @T2);
+    Res := FTarget.EndDraw;
+    if Res = D2DERR_RECREATE_TARGET then
+    begin
+      HandleDeviceRemoved;
+      Exit;
+    end;
+    if (BeginSceneCount = 1) and (FSwapChain <> nil) then
+      FSwapChain.Present(0, 0);
+    if FBufferTexture <> nil then
+    begin
+      SharedDevice.CopyResource(FCopyBuffer, FBufferTexture);
+      if Succeeded(FCopyBuffer.Map(0, D3D10_MAP_READ, 0, Mapped)) then
+      try
+        if Mapped.RowPitch <> Cardinal(FBufferSize.Width * 4) then
+        begin
+          for I := 0 to FBufferSize.Height - 1 do
+            Move(PAlphaColorArray(Mapped.pData)[Cardinal(I) * (Mapped.RowPitch div 4)],
+              PAlphaColorArray(WindowHandleToPlatform(Parent).BufferBits)[I * FBufferSize.Width], FBufferSize.Width * 4);
+        end
+        else
+          Move(Mapped.pData^, WindowHandleToPlatform(Parent).BufferBits^, FBufferSize.Width * FBufferSize.Height * 4);
+      finally
+        FCopyBuffer.Unmap(0);
+      end;
 
-  finally
-    Tmonitor.Exit(fLock); // https://quality.embarcadero.com/browse/RSP-19673
+      // in design-time just draw buffer
+      if (WindowHandleToPlatform(Parent).Form <> nil) and
+        (csDesigning in WindowHandleToPlatform(Parent).Form.ComponentState) then
+        Winapi.Windows.BitBlt(FContextHandle, 0, 0, Width, Height, WindowHandleToPlatform(Parent).BufferHandle, 0, 0,
+          SRCCOPY);
+    end;
   end;
+  inherited;
 end;
 
 procedure TCanvasD2D.HandleDeviceRemoved;
 begin
-  // TMessageManager.DefaultManager.SendMessage(nil, TContextLostMessage.Create, False); => https://quality.embarcadero.com/browse/RSP-19673
+  TMessageManager.DefaultManager.SendMessage(nil, TContextLostMessage.Create, False);
   DestroySharedResources;
 end;
 
@@ -1993,52 +1976,45 @@ var
   Mapped: D3D10_MAPPED_TEXTURE2D;
   Flags: TD3D10_Map;
 begin
-  Tmonitor.Enter(fLock); // https://quality.embarcadero.com/browse/RSP-19673
-  try
+  Result := False;
+  H := TD2DBitmapHandle(Bitmap);
+  H.FAccess := Access;
+  if H.FMapBuffer = nil then
+  begin
+    FillChar(Desc, SizeOf(D3D10_TEXTURE2D_DESC), 0);
+    Desc.Format := DXGI_FORMAT_B8G8R8A8_UNORM;
+    Desc.Width := H.FWidth;
+    Desc.Height := H.FHeight;
+    Desc.MipLevels := 1;
+    Desc.ArraySize := 1;
+    Desc.SampleDesc.Count := 1;
+    Desc.SampleDesc.Quality := 0;
+    Desc.CPUAccessFlags := D3D10_CPU_ACCESS_READ or D3D10_CPU_ACCESS_WRITE;
+    Desc.Usage := D3D10_USAGE_STAGING;
+    Desc.BindFlags := 0;
 
-    Result := False;
-    H := TD2DBitmapHandle(Bitmap);
-    H.FAccess := Access;
-    if H.FMapBuffer = nil then
-    begin
-      FillChar(Desc, SizeOf(D3D10_TEXTURE2D_DESC), 0);
-      Desc.Format := DXGI_FORMAT_B8G8R8A8_UNORM;
-      Desc.Width := H.FWidth;
-      Desc.Height := H.FHeight;
-      Desc.MipLevels := 1;
-      Desc.ArraySize := 1;
-      Desc.SampleDesc.Count := 1;
-      Desc.SampleDesc.Quality := 0;
-      Desc.CPUAccessFlags := D3D10_CPU_ACCESS_READ or D3D10_CPU_ACCESS_WRITE;
-      Desc.Usage := D3D10_USAGE_STAGING;
-      Desc.BindFlags := 0;
-
-      if Failed(SharedDevice.CreateTexture2D(Desc, nil, H.FMapBuffer)) then
-        raise ECannotCreateTexture.CreateFmt(SCannotCreateTexture, [ClassName]);
-    end;
-    case Access of
-      TMapAccess.Read:
-        begin
-          Flags := D3D10_MAP_READ;
-          SharedDevice.CopyResource(H.FMapBuffer, H.Texture);
-        end;
-      TMapAccess.Write:
-        Flags := D3D10_MAP_WRITE;
-    else
+    if Failed(SharedDevice.CreateTexture2D(Desc, nil, H.FMapBuffer)) then
+      raise ECannotCreateTexture.CreateFmt(SCannotCreateTexture, [ClassName]);
+  end;
+  case Access of
+    TMapAccess.Read:
       begin
-        Flags := D3D10_MAP_READ_WRITE;
+        Flags := D3D10_MAP_READ;
         SharedDevice.CopyResource(H.FMapBuffer, H.Texture);
       end;
-    end;
-    if Succeeded(H.FMapBuffer.Map(0, Flags, 0, Mapped)) then
+    TMapAccess.Write:
+      Flags := D3D10_MAP_WRITE;
+  else
     begin
-      Data.Data := Mapped.pData;
-      Data.Pitch := Mapped.RowPitch;
-      Result := True;
+      Flags := D3D10_MAP_READ_WRITE;
+      SharedDevice.CopyResource(H.FMapBuffer, H.Texture);
     end;
-
-  finally
-    Tmonitor.exit(fLock); // https://quality.embarcadero.com/browse/RSP-19673
+  end;
+  if Succeeded(H.FMapBuffer.Map(0, Flags, 0, Mapped)) then
+  begin
+    Data.Data := Mapped.pData;
+    Data.Pitch := Mapped.RowPitch;
+    Result := True;
   end;
 end;
 
@@ -2046,17 +2022,10 @@ class procedure TCanvasD2D.DoUnmapBitmap(const Bitmap: THandle; var Data: TBitma
 var
   H: TD2DBitmapHandle;
 begin
-  Tmonitor.Enter(fLock); // https://quality.embarcadero.com/browse/RSP-19673
-  try
-
-    H := TD2DBitmapHandle(Bitmap);
-    H.FMapBuffer.Unmap(0);
-    if H.FAccess in [TMapAccess.ReadWrite, TMapAccess.Write] then
-      SharedDevice.CopyResource(H.Texture, H.FMapBuffer);
-
-  finally
-    Tmonitor.exit(fLock); // https://quality.embarcadero.com/browse/RSP-19673
-  end;
+  H := TD2DBitmapHandle(Bitmap);
+  H.FMapBuffer.Unmap(0);
+  if H.FAccess in [TMapAccess.ReadWrite, TMapAccess.Write] then
+    SharedDevice.CopyResource(H.Texture, H.FMapBuffer);
 end;
 
 procedure TCanvasD2D.DoDrawBitmap(const ABitmap: TBitmap; const SrcRect, DstRect: TRectF; const AOpacity: Single;
@@ -2332,21 +2301,20 @@ end;
 constructor TD2DCanvasSaveState.Create;
 begin
   inherited;
-  // FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler); => https://quality.embarcadero.com/browse/RSP-19673
+  FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler);
 end;
 
 destructor TD2DCanvasSaveState.Destroy;
 begin
-  // TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId); => https://quality.embarcadero.com/browse/RSP-19673
+  TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId);
   inherited;
 end;
 
-//https://quality.embarcadero.com/browse/RSP-19673
-//procedure TD2DCanvasSaveState.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
-//begin
-//  FStateBlock := nil;
-//  FLayer := nil;
-//end;
+procedure TD2DCanvasSaveState.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
+begin
+  FStateBlock := nil;
+  FLayer := nil;
+end;
 
 procedure TD2DCanvasSaveState.Assign(Source: TPersistent);
 var
@@ -2408,13 +2376,13 @@ type
 constructor TTextLayoutD2D.Create(const ACanvas: TCanvas);
 begin
   inherited;
-  // FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler); => https://quality.embarcadero.com/browse/RSP-19673
+  FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler);
   FDrawTextOption := DefaultDrawTextOption;
 end;
 
 destructor TTextLayoutD2D.Destroy;
 begin
-  // TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId); => https://quality.embarcadero.com/browse/RSP-19673
+  TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId);
   inherited;
 end;
 
@@ -2548,13 +2516,12 @@ begin
   FTextRect.Right := Min(FTextRect.Right, MaxSize.X);
 end;
 
-//https://quality.embarcadero.com/browse/RSP-19673
-//procedure TTextLayoutD2D.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
-//begin
-//  FLayout := nil;
-//  FBrush := nil;
-//  SetNeedUpdate;
-//end;
+procedure TTextLayoutD2D.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
+begin
+  FLayout := nil;
+  FBrush := nil;
+  SetNeedUpdate;
+end;
 
 procedure TTextLayoutD2D.DoDrawLayout(const ACanvas: TCanvas);
 
@@ -2820,7 +2787,7 @@ begin
 
   PathRendering := TTextRendering.Create;
   try
-
+                                                                                       
     FLayout.Draw(APath, PathRendering, 0, 0);
   finally
     PathRendering.Free;
@@ -2844,7 +2811,6 @@ begin
 end;
 
 initialization
-  TCanvasD2D.fLock := TObject.create; // https://quality.embarcadero.com/browse/RSP-19673
   TTextLayoutManager.RegisterTextLayout(TTextLayoutD2D, TCanvasD2D);
 
   TBitmapCodecManager.RegisterBitmapCodecClass(SBMPImageExtension, SVBitmaps, True, TBitmapCodecWIC);
@@ -2856,8 +2822,4 @@ initialization
   TBitmapCodecManager.RegisterBitmapCodecClass(STIFFImageExtension, SVTIFFImages, True, TBitmapCodecWIC);
   TBitmapCodecManager.RegisterBitmapCodecClass(SICOImageExtension, SVIcons, True, TBitmapCodecWIC);
   TBitmapCodecManager.RegisterBitmapCodecClass(SHDPImageExtension, SWMPImages, True, TBitmapCodecWIC);
-
-finalization
-  TCanvasD2D.fLock.free; // https://quality.embarcadero.com/browse/RSP-19673
-
 end.
