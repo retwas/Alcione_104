@@ -11,73 +11,16 @@ unit FMX.Platform.iOS;
 
 interface
 
-{$WARNINGS OFF}
 {$SCOPEDENUMS ON}
 
 uses
-  Macapi.ObjectiveC, iOSapi.UIKit, iOSapi.GLKit, FMX.Types, FMX.Forms, FMX.ZOrder.iOS,
-  System.Messaging, //https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-  iOSapi.Foundation; //https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
+  Macapi.ObjectiveC, iOSapi.UIKit, iOSapi.GLKit, FMX.Types, FMX.Forms, FMX.ZOrder.iOS;
 
 const
   /// <summary>Notification. Posted when native UIViewcontroller changed frame of root view.</summary>
   FMXViewControllerFrameChanged = 'FMXViewControllerFrameChanged';
   libobjc = '/usr/lib/libobjc.dylib';
-
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-type
-  // Moved from implementation
-  id = Pointer;
-  SEL = Pointer;
-
-  // New types
-  TAppDelegate_applicationDidFinishLaunchingWithOptions = record
-  public
-    Application: UIApplication;
-    Options: NSDictionary;
-  end;
-
-  TAppDelegateMessage_applicationDidFinishLaunchingWithOptions = class(TMessage<TAppDelegate_applicationDidFinishLaunchingWithOptions>)
-  public
-    constructor Create(const AValue: TAppDelegate_applicationDidFinishLaunchingWithOptions);
-  end;
-
-  TAppDelegate_applicationOpenURLWithSourceAnnotation = record
-  public
-    Application: UIApplication;
-    Url: NSUrl;
-    SourceApplication: NSString;
-    Annotation: id;
-  end;
-
-  TAppDelegateMessage_applicationOpenURLWithSourceAnnotation = class(TMessage<TAppDelegate_applicationOpenURLWithSourceAnnotation>)
-  public
-    constructor Create(const AValue: TAppDelegate_applicationOpenURLWithSourceAnnotation);
-  end;
-
-  TAppDelegate_applicationOpenURLWithOptions = record
-  public
-    Application: UIApplication;
-    Url: NSUrl;
-    Options: NSDictionary;
-  end;
-
-  TAppDelegateMessage_applicationOpenURLWithOptions = class(TMessage<TAppDelegate_applicationOpenURLWithOptions>)
-  public
-    constructor Create(const AValue: TAppDelegate_applicationOpenURLWithOptions);
-  end;
-
-  TAppDelegate_applicationDidBecomeActive = record
-  public
-    Application: UIApplication;
-  end;
-
-  TAppDelegateMessage_applicationDidBecomeActive = class(TMessage<TAppDelegate_applicationDidBecomeActive>)
-  public
-    constructor Create(const AValue: TAppDelegate_applicationDidBecomeActive);
-  end;
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-
+  
 type
 
   TiOSWindowHandle = class(TWindowHandle)
@@ -122,14 +65,13 @@ procedure RegisterCorePlatformServices;
 implementation
 
 uses
-  System.Classes, System.SysUtils, System.Types, System.UITypes, System.TypInfo, System.RTLConsts,
-  System.Math, Macapi.ObjCRuntime, Macapi.CoreFoundation, Macapi.Helpers, iOSapi.CocoaTypes,
+  System.Classes, System.SysUtils, System.Types, System.UITypes, System.TypInfo, System.Messaging, System.RTLConsts,
+  System.Math, Macapi.ObjCRuntime, Macapi.CoreFoundation, Macapi.Helpers, iOSapi.CocoaTypes, iOSapi.Foundation,
   iOSapi.CoreGraphics, iOSapi.Helpers, FMX.Graphics, FMX.Consts, FMX.Controls, FMX.Canvas.GPU, FMX.TextLayout,
   FMX.Text, FMX.Styles, FMX.Gestures, FMX.Context.GLES, FMX.Forms3D, FMX.Utils, FMX.Graphics.iOS, FMX.Context.GLES.iOS,
   FMX.Controls.iOS, FMX.Gestures.iOS, FMX.Helpers.iOS, FMX.Dialogs.iOS, FMX.Platform, FMX.Platform.Timer.iOS,
   FMX.Platform.SaveState.iOS, FMX.MultiTouch.iOS, FMX.Platform.Metrics.iOS, FMX.Platform.Device.iOS,
-  FMX.Platform.Screen.iOS, FMX.Platform.Logger.iOS,
-  System.Generics.Collections, ALFmxInertialMovement; //https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
+  FMX.Platform.Screen.iOS, FMX.Platform.Logger.iOS;
 
 const
   UNNotificationPresentationOptionBadge = 1;
@@ -203,8 +145,8 @@ type
     property ApplicationState: TApplicationState read FApplicationState;
   end;
 
-  // id = Pointer;  //https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-  // SEL = Pointer;  //https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
+  id = Pointer;
+  SEL = Pointer;
 
   IFMXWakeHandler = interface(NSObject)
   ['{ECEC50FA-6A4A-4DAE-9B23-A59A7C2CACC1}']
@@ -819,7 +761,7 @@ type
   TFMXTextRange = class;
 
   { TTextServiceCocoa }
-
+  
   TTextServiceCocoa = class(TTextService)
   private
     [Weak] FView: TFMXViewBase;
@@ -942,7 +884,7 @@ type
 
     class function FromUITextRange(const ARange: UITextRange): TFMXTextRange; static;
   end;
-
+    
 function imp_implementationWithBlock(block: id): Pointer; cdecl; external libobjc name _PU + 'imp_implementationWithBlock';
 function imp_removeBlock(anImp: Pointer): Integer; cdecl; external libobjc name _PU + 'imp_removeBlock';
 
@@ -990,17 +932,7 @@ end;
 { TApplicationDelegate }
 
 class procedure TApplicationDelegate.applicationDidBecomeActive(self: id; _cmd: SEL; application: PUIApplication);
-
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-var
-  AppDelegate_applicationDidBecomeActive: TAppDelegate_applicationDidBecomeActive;
-  AppDelegate_applicationDidBecomeActiveMessage: TAppDelegateMessage_applicationDidBecomeActive;
 begin
-  AppDelegate_applicationDidBecomeActive.Application := TUIApplication.Wrap(application);
-  AppDelegate_applicationDidBecomeActiveMessage := TAppDelegateMessage_applicationDidBecomeActive.Create(AppDelegate_applicationDidBecomeActive);
-  TMessageManager.DefaultManager.SendMessage(Self, AppDelegate_applicationDidBecomeActiveMessage);
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-
   PlatformCocoaTouch.HandleApplicationEvent(TApplicationEvent.BecameActive, nil);
 end;
 
@@ -1050,17 +982,7 @@ var
   LocalNotification: UILocalNotification;
   RemoteNotification: Pointer;
   WindowManager: TCocoaTouchWindowManager;
-
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-  AppDelegate_applicationDidFinishLaunchingWithOptions: TAppDelegate_applicationDidFinishLaunchingWithOptions;
-  AppDelegate_applicationDidFinishLaunchingWithOptionsMessage: TAppDelegateMessage_applicationDidFinishLaunchingWithOptions;
 begin
-  AppDelegate_applicationDidFinishLaunchingWithOptions.Application := TUIApplication.Wrap(application);
-  AppDelegate_applicationDidFinishLaunchingWithOptions.Options := TNSDictionary.Wrap(options);
-  AppDelegate_applicationDidFinishLaunchingWithOptionsMessage := TAppDelegateMessage_applicationDidFinishLaunchingWithOptions.Create(AppDelegate_applicationDidFinishLaunchingWithOptions);
-  TMessageManager.DefaultManager.SendMessage(Self, AppDelegate_applicationDidFinishLaunchingWithOptionsMessage);
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-
   Include(FState, TApplicationDelegate.TApplicationTransitionState.Launching);
   try
     StartupOptions := TNSDictionary.Wrap(options);
@@ -1156,12 +1078,12 @@ class procedure TApplicationDelegate.applicationDidRegisterForRemoteNotification
     Dest: TBytes;
   begin
     Length := Data.length;
-
+     
     SetLength(Src, Length);
     Move(Data.bytes^, Src[0], Length);
     SetLength(Dest, Length * 2);
     BinToHex(Src, 0, Dest, 0, Length);
-
+    
     Result := LowerCase(StringOf(Dest));
   end;
 var
@@ -1171,7 +1093,7 @@ begin
   if deviceToken <> nil then
   begin
     Token := NSDataToHexString(TNSData.Wrap(deviceToken));
-    Message := TPushDeviceTokenMessage.Create(TPushDeviceTokenData.Create(Token, deviceToken));  // https://quality.embarcadero.com/browse/RSP-21539
+    Message := TPushDeviceTokenMessage.Create(TPushDeviceTokenData.Create(Token));
     TMessageManager.DefaultManager.SendMessage(nil, Message);
   end;
 end;
@@ -1180,18 +1102,7 @@ class function TApplicationDelegate.applicationOpenURLWithOptions(self: id; _cmd
   url: Pointer; options: PNSDictionary): Boolean;
 var
   URLString: string;
-
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-  AppDelegate_applicationOpenURLWithOptions: TAppDelegate_applicationOpenURLWithOptions;
-  AppDelegate_applicationOpenURLWithOptionsMessage: TAppDelegateMessage_applicationOpenURLWithOptions;
 begin
-  AppDelegate_applicationOpenURLWithOptions.Application := TUIApplication.Wrap(application);
-  AppDelegate_applicationOpenURLWithOptions.Url := TNSUrl.Wrap(url);
-  AppDelegate_applicationOpenURLWithOptions.Options := TNSDictionary.Wrap(options);
-  AppDelegate_applicationOpenURLWithOptionsMessage := TAppDelegateMessage_applicationOpenURLWithOptions.Create(AppDelegate_applicationOpenURLWithOptions);
-  TMessageManager.DefaultManager.SendMessage(Self, AppDelegate_applicationOpenURLWithOptionsMessage);
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-
   if url <> nil then
     URLString := NSStrToStr(TNSURL.Wrap(url).absoluteString)
   else
@@ -1206,19 +1117,7 @@ class function TApplicationDelegate.applicationOpenURLWithSourceAnnotation(self:
 var
   URLString: string;
   SourceAppString: string;
-
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-  AppDelegate_applicationOpenURLWithSourceAnnotation: TAppDelegate_applicationOpenURLWithSourceAnnotation;
-  AppDelegate_applicationOpenURLWithSourceAnnotationMessage: TAppDelegateMessage_applicationOpenURLWithSourceAnnotation;
 begin
-  AppDelegate_applicationOpenURLWithSourceAnnotation.Application := TUIApplication.Wrap(application);
-  AppDelegate_applicationOpenURLWithSourceAnnotation.Url := TNSUrl.Wrap(url);
-  AppDelegate_applicationOpenURLWithSourceAnnotation.SourceApplication := TNSString.Wrap(sourceApplication);
-  AppDelegate_applicationOpenURLWithSourceAnnotation.Annotation := annotation;
-  AppDelegate_applicationOpenURLWithSourceAnnotationMessage := TAppDelegateMessage_applicationOpenURLWithSourceAnnotation.Create(AppDelegate_applicationOpenURLWithSourceAnnotation);
-  TMessageManager.DefaultManager.SendMessage(Self, AppDelegate_applicationOpenURLWithSourceAnnotationMessage);
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-
   if url <> nil then
     URLString := NSStrToStr(TNSURL.Wrap(url).absoluteString)
   else
@@ -1361,7 +1260,6 @@ end;
 constructor TPlatformCocoaTouch.Create;
 begin
   inherited;
-  ALAniCalcTimerProcs := Tlist<TALAniCalculations>.create; // added to support ALFmxInertialMovement
   FTimerService := TCocoaTouchTimerService.Create;
   FMetricsServices := TCocoaTouchMetricsServices.Create;
   FGraphicServices := TCocoaTouchGraphicServices.Create;
@@ -1398,8 +1296,6 @@ begin
   CFRelease(FRunLoopObserver);
   System.Classes.WakeMainThread := nil;
   FreeAndNil(FWakeHandler);
-  ALAniCalcTimerProcs.Free; // added to support ALFmxInertialMovement
-  ALAniCalcTimerProcs := nil;
   inherited;
 end;
 
@@ -2155,7 +2051,7 @@ begin
     NSLayoutRelationEqual, NSObjectToID(RootView), NSLayoutAttributeRight, 1, 0));
   Constraint.setActive(True);
 
-
+                                       
 //  Constraint := TNSLayoutConstraint.Wrap(TNSLayoutConstraint.OCClass.constraintWithItem(NSObjectToID(FStatusBar), NSLayoutAttributeTop,
 //    NSLayoutRelationEqual, NSObjectToID(RootView), NSLayoutAttributeTopMargin, 1, 0));
 //  Constraint.setActive(True);
@@ -2720,7 +2616,7 @@ begin
     UIGestureRecognizerStateCancelled:
       State := [TInteractiveGestureFlag.gfEnd];
   end;
-
+  
   MultiTouchManager.HandleRotate(LPoint.ToPointF, -gestureRecognizer.Rotation, State, gestureRecognizer.numberOfTouches);
 end;
 
@@ -3344,7 +3240,7 @@ procedure TFMXViewBase.ShowContextMenu;
   var
     TextInput: ITextInput;
   begin
-    if not FIgnorePosition and FContextMenu.HasControl and (Form <> nil) and (Form.Focused <> nil) and
+    if not FIgnorePosition and FContextMenu.HasControl and (Form <> nil) and (Form.Focused <> nil) and 
       Form.Focused.GetObject.GetInterface(ITextInput, TextInput) then
       FCarretPositionChanged := TextInput.GetTextService.CaretPosition <> FLastCaretPosition
     else
@@ -3770,15 +3666,7 @@ end;
 procedure TFMXView3D.drawRect(R: CGRect);
 var
   PaintControl: IPaintControl;
-  i: integer;
 begin
-
-  //process all the pending input event
-  //NOTE: when the mouse is down, MouseMove is continuously firing
-  for i := ALAniCalcTimerProcs.Count - 1 downto 0 do
-    if (ALAniCalcTimerProcs[i].Down) and
-       (not ALAniCalcTimerProcs[i].mouseEventReceived) then exit;
-
   if Supports(Form, IPaintControl, PaintControl) then
     try
       PaintControl.PaintRects([Form.ClientRect]);
@@ -4556,7 +4444,7 @@ begin
   if AForm is TCustomForm then
   begin
     SystemStatusBar := TCustomForm(AForm).SystemStatusBar;
-    if (SystemStatusBar.Visibility = TFormSystemStatusBar.TVisibilityMode.Visible) and
+    if (SystemStatusBar.Visibility = TFormSystemStatusBar.TVisibilityMode.Visible) and 
        (SystemStatusBar.BackgroundColor = TAlphaColorRec.Null) then
     begin
       if GetUserInterfaceStyle = UIUserInterfaceStyleLight then
@@ -4716,32 +4604,6 @@ begin
     end;
    end;
 end;
-
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
-constructor TAppDelegateMessage_applicationDidFinishLaunchingWithOptions.Create(
-  const AValue: TAppDelegate_applicationDidFinishLaunchingWithOptions);
-begin
-  inherited Create(AValue);
-end;
-
-constructor TAppDelegateMessage_applicationOpenURLWithSourceAnnotation.Create(
-  const AValue: TAppDelegate_applicationOpenURLWithSourceAnnotation);
-begin
-  inherited Create(AValue);
-end;
-
-constructor TAppDelegateMessage_applicationOpenURLWithOptions.Create(
-  const AValue: TAppDelegate_applicationOpenURLWithOptions);
-begin
-  inherited Create(AValue);
-end;
-
-constructor TAppDelegateMessage_applicationDidBecomeActive.Create(
-  const AValue: TAppDelegate_applicationDidBecomeActive);
-begin
-  inherited Create(AValue);
-end;
-//https://blog.grijjy.com/2017/01/23/using-facebook-sdk-native-framework-for-ios-and-android-for-social-login-and-more-part-1/
 
 { TNotificationCenterDelegate }
 

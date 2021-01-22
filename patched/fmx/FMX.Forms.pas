@@ -9,7 +9,6 @@
 
 unit FMX.Forms;
 
-{$HINTS OFF}
 {$MINENUMSIZE 4}
 {$H+}
 
@@ -1392,7 +1391,7 @@ type
 
 var
   GlobalTimerService: IFMXTimerService;
-
+  
 function PropertyValuesFromStream(const ComponentName: string; const Properties: array of string; const Input: TStream): TArray<Variant>; forward;
 function ReadResource(const FormClass: TClass; const PropertyNames: array of string; const PropertyStore : TDictionary<string, Variant>) : Boolean; forward;
 
@@ -5963,7 +5962,7 @@ begin
   else
     ClearColor := TAlphaColorRec.Null;
 
-  if (FFill.Kind = TBrushKind.None) or ( // https://quality.embarcadero.com/browse/RSP-20970
+  if (FFill.Kind = TBrushKind.None) or ((FFill.Color and TAlphaColorRec.Alpha = 0) and
      (FFill.Kind = TBrushKind.Solid)) then
   begin
     if not (TCanvasStyle.SupportClipRects in TCanvasManager.DefaultCanvas.GetCanvasStyle) then
@@ -5971,14 +5970,14 @@ begin
       if Transparency then
         Canvas.Clear(ClearColor)
       else
-        Canvas.Clear(FFill.Color); // https://quality.embarcadero.com/browse/RSP-20970
+        Canvas.Clear(FFill.Color and $FFFFFF);
     end
     else
       for I := Low(FUpdateRects) to High(FUpdateRects) do
         if Transparency then
           Canvas.ClearRect(FUpdateRects[I], ClearColor)
         else
-          Canvas.ClearRect(FUpdateRects[I], FFill.Color); // https://quality.embarcadero.com/browse/RSP-20970
+          Canvas.ClearRect(FUpdateRects[I], FFill.Color and $FFFFFF);
   end
   else
   begin

@@ -20,7 +20,7 @@ implementation
 uses
   System.Classes, System.Types, System.StrUtils, System.SysUtils,  System.RTLConsts, Androidapi.JNI.Webkit,
   AndroidApi.JNI.App, Androidapi.JNI.Embarcadero, Androidapi.JNI.GraphicsContentViewText, Androidapi.JNI.JavaTypes,
-  Androidapi.JNIBridge, Androidapi.JNI.Os, Androidapi.JNI.Net, Androidapi.Helpers, Androidapi.JNI.Widget, FMX.Forms,
+  Androidapi.JNIBridge, Androidapi.JNI.Os, Androidapi.JNI.Net, Androidapi.Helpers, Androidapi.JNI.Widget, FMX.Forms, 
   FMX.Helpers.Android, FMX.Graphics, FMX.Surfaces, FMX.ZOrder.Android, FMX.Platform, FMX.Platform.Android, FMX.WebBrowser, FMX.Types;
 
 type
@@ -69,7 +69,6 @@ type
     FChildrenContainer: JViewGroup;
     FURL: string;
     [Weak] FWebControl: TCustomWebBrowser;
-    [Weak] FForm: TCommonCustomForm; // https://quality.embarcadero.com/browse/RSP-24736
     function GetZOrderManager: TAndroidZOrderManager;
   protected
     function QueryInterface(const IID: TGUID; out Obj): HResult; stdcall;
@@ -79,7 +78,6 @@ type
     procedure Hide;
     procedure PrepareForDestruction;
     procedure UpdateContentFromControl;
-    procedure RootChanged(const aRoot: IRoot); // https://quality.embarcadero.com/browse/RSP-24736
     procedure DoNavigate(const AURL: string);
     procedure DoReload;
     { IFMXWebBrowserService }
@@ -106,7 +104,6 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function HasZOrderManager: Boolean; // https://quality.embarcadero.com/browse/RSP-24736
     function CaptureBitmap: TBitmap;
 
     property EnableCaching: Boolean read GetEnableCaching write SetEnableCaching;
@@ -160,11 +157,17 @@ begin
   Result := FWebControl.Visible;
 end;
 
-//https://quality.embarcadero.com/browse/RSP-24736
 function TAndroidWebBrowserService.GetZOrderManager: TAndroidZOrderManager;
+var
+  Form: TCommonCustomForm;
 begin
-  if (FForm <> nil) then Result := WindowHandleToPlatform(fForm.Handle).ZOrderManager
-  else Result := nil;
+  if (FWebControl <> nil) and (FWebControl.Root <> nil) and (FWebControl.Root.GetObject is TCommonCustomForm) then
+  begin
+    Form := TCommonCustomForm(FWebControl.Root);
+    Result := WindowHandleToPlatform(Form.Handle).ZOrderManager;
+  end
+  else
+    Result := nil;
 end;
 
 procedure TAndroidWebBrowserService.GoBack;
@@ -304,7 +307,7 @@ begin
   FWebViewContainer.addView(FWebView, LayoutParams);
   LayoutParams := TJRelativeLayout_LayoutParams.JavaClass.init(TJViewGroup_LayoutParams.JavaClass.MATCH_PARENT, TJViewGroup_LayoutParams.JavaClass.MATCH_PARENT);
   FWebViewContainer.addView(FChildrenContainer, LayoutParams);
-
+ 
   SetEnableCaching(True);
 end;
 
@@ -345,37 +348,22 @@ end;
 
 destructor TAndroidWebBrowserService.Destroy;
 begin
-  if HasZOrderManager then // https://quality.embarcadero.com/browse/RSP-24736
+  if ZOrderManager <> nil then
     ZOrderManager.RemoveLink(FWebControl);
 
   FWebView.SetWebViewListener(nil);
   inherited;
 end;
 
-// https://quality.embarcadero.com/browse/RSP-24736
-function TAndroidWebBrowserService.HasZOrderManager: Boolean;
-begin
-  Result := (fForm <> nil) and (fForm.Handle <> nil) and (FWebControl <> nil);
-end;
-
 procedure TAndroidWebBrowserService.UpdateContentFromControl;
 begin
-  if HasZOrderManager then                            // https://quality.embarcadero.com/browse/RSP-24736
-    ZOrderManager.UpdateOrderAndBounds(FWebControl);  // https://quality.embarcadero.com/browse/RSP-24736
-end;
-
-// https://quality.embarcadero.com/browse/RSP-24736
-procedure TAndroidWebBrowserService.RootChanged(const aRoot: IRoot);
-begin
-  // Changing root for native control means changing ZOrderManager, because one form owns ZOrderManager.
-  // So we need to remove itself from old one and add to new one.
-  if HasZOrderManager then ZOrderManager.RemoveLink(FWebControl);
-
-  if aRoot is TCommonCustomForm then FForm := TCommonCustomForm(aRoot)
-  else FForm := nil;
-
-  if HasZOrderManager then ZOrderManager.AddOrSetLink(FWebControl, FWebViewContainer, FChildrenContainer);
-  UpdateContentFromControl;
+  if (FWebControl <> nil) and (ZOrderManager <> nil) then
+  begin
+    ZOrderManager.AddOrSetLink(FWebControl, FWebViewContainer, FChildrenContainer);
+    ZOrderManager.UpdateOrderAndBounds(FWebControl);
+  end
+  else
+    Hide;
 end;
 
 { TAndroidWBService }

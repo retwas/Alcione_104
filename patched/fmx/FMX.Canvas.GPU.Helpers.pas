@@ -12,12 +12,11 @@ unit FMX.Canvas.GPU.Helpers;
 
 interface
 
-{$HINTS OFF}
 {$SCOPEDENUMS ON}
 
 uses
-  System.Types, System.UITypes, FMX.Types, FMX.Types3D, FMX.Materials.Canvas, FMX.Graphics,
-  System.Math.Vectors, ALFMXTypes3D;
+  System.Types, System.UITypes, FMX.Types, FMX.Types3D, FMX.Materials.Canvas, FMX.Graphics, 
+  System.Math.Vectors;
 
 type
   TDrawingMode = (Normal, WriteStencilInvert, ReadStencil, ClearStencil);
@@ -355,10 +354,8 @@ begin
 
   if Material <> nil then
     M := Material
-  else if Texture <> nil then begin
-    if (Texture is TalTexture) and (TalTexture(Texture).material <> nil) then M := TalTexture(Texture).material  // https://quality.embarcadero.com/browse/RSP-23501
-    else M := FTexMat
-  end
+  else if Texture <> nil then
+    M := FTexMat
   else
     M := FSolidMat;
 
@@ -475,8 +472,8 @@ var
 begin
   Buffer := BatchBuffers.GetBuffer(Self);
 
-  if (FCurrentMaterial = FTexMat) or
-     (FCurrentMaterial is TALCanvasTextureMaterial) then begin // https://quality.embarcadero.com/browse/RSP-23501
+  if FCurrentMaterial = FTexMat then
+  begin
     SetLength(SolidDecl, 3);
     SolidDecl[0].Format := TVertexFormat.Vertex;
     SolidDecl[0].Offset := 0;
@@ -484,8 +481,7 @@ begin
     SolidDecl[1].Offset := 12;
     SolidDecl[2].Format := TVertexFormat.Color0;
     SolidDecl[2].Offset := 20;
-    if (FCurrentMaterial = FTexMat) then FTexMat.Texture := FCurrentTexture
-    else TALCanvasTextureMaterial(FCurrentMaterial).Texture := FCurrentTexture; // https://quality.embarcadero.com/browse/RSP-23501
+    FTexMat.Texture := FCurrentTexture;
     FContext.DrawPrimitives(TPrimitivesKind.Triangles, @Buffer.VertexBuffer[0], @Buffer.IndexBuffer[0], SolidDecl,
       SizeOf(TVertexBufferItem), FBatchedVertices, SizeOf(TIndexBufferItem), FBatchedIndices, FCurrentMaterial, 1);
   end else if FCurrentMaterial <> FSolidMat then

@@ -11,7 +11,6 @@ unit FMX.Ani;
 
 interface
 
-{$HINTS OFF}
 {$SCOPEDENUMS ON}
 
 uses
@@ -90,7 +89,6 @@ type
   private class var
     FAniThread: TTimer;
   private
-    fOvershoot: Single; // https://quality.embarcadero.com/browse/RSP-16991
     FTickCount : Integer;
     FDuration: Single;
     FDelay, FDelayTime: Single;
@@ -115,7 +113,6 @@ type
     procedure SetTriggerInverse(const Value: TTrigger);
     procedure ParseTriggers(const AInstance: TFmxObject; Normal, Inverse: Boolean);
     class procedure Uninitialize;
-    function OvershootStored: Boolean; // https://quality.embarcadero.com/browse/RSP-16991
   protected
     ///<summary>Return normalized CurrentTime value between 0..1 </summary>
     function GetNormalizedTime: Single;
@@ -153,7 +150,6 @@ type
     property OnProcess: TNotifyEvent read FOnProcess write FOnProcess;
     property OnFinish: TNotifyEvent read FOnFinish write FOnFinish;
     class property AniThread: TTimer read FAniThread;
-    property Overshoot: Single read fOvershoot write fOvershoot Stored OvershootStored; // https://quality.embarcadero.com/browse/RSP-16991
   end;
 
 { TCustomPropertyAnimation }
@@ -1445,7 +1441,6 @@ begin
     DestAnimation.Trigger := Trigger;
     DestAnimation.TriggerInverse := TriggerInverse;
     DestAnimation.Enabled := Enabled;
-    DestAnimation.overshoot := overshoot; // https://quality.embarcadero.com/browse/RSP-16991
   end
   else
     inherited;
@@ -1456,7 +1451,6 @@ begin
   inherited;
   FEnabled := False;
   Duration := 0.2;
-  fOvershoot := 0.0; // https://quality.embarcadero.com/browse/RSP-16991
 end;
 
 destructor TAnimation.Destroy;
@@ -1478,11 +1472,6 @@ begin
   inherited;
   if not (csDesigning in ComponentState) and Enabled then
     Start;
-end;
-
-function TAnimation.OvershootStored: Boolean;
-begin
-  result := FOverShoot <> 0; // https://quality.embarcadero.com/browse/RSP-16991
 end;
 
 procedure TAnimation.SetEnabled(const Value: Boolean);
@@ -1538,7 +1527,7 @@ begin
       TInterpolationType.Elastic:
         Result := InterpolateElastic(FTime, 0, 1, FDuration, 0, 0, FAnimationType);
       TInterpolationType.Back:
-        Result := InterpolateBack(FTime, 0, 1, FDuration, fOvershoot, FAnimationType); // https://quality.embarcadero.com/browse/RSP-16991
+        Result := InterpolateBack(FTime, 0, 1, FDuration, 0, FAnimationType);
       TInterpolationType.Bounce:
         Result := InterpolateBounce(FTime, 0, 1, FDuration, FAnimationType);
     end;

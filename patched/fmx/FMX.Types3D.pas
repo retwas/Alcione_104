@@ -456,11 +456,8 @@ type
     FBits: Pointer;
     FContextLostId: Integer;
     FContextResetId: Integer;
-    // https://quality.embarcadero.com/browse/RSP-19687
-    (*
     procedure ContextLostHandler(const Sender : TObject; const Msg : TMessage);
     procedure ContextResetHandler(const Sender : TObject; const Msg : TMessage);
-    *)
     procedure SetPixelFormat(const Value: TPixelFormat);
     procedure SetStyle(const Value: TTextureStyles);
     function GetBytesPerPixel: Integer;
@@ -3067,28 +3064,21 @@ begin
   FMinFilter := TTextureFilter.Linear;
   FMagFilter := TTextureFilter.Linear;
   FPixelFormat := TPixelFormat.None;
-  // https://quality.embarcadero.com/browse/RSP-19687
-  FStyle := [TTextureStyle.MipMaps, TTextureStyle.Dynamic, TTextureStyle.volatile];
-  FContextLostId := 0;
-  FContextResetId := 0;
-  FRequireInitializeAfterLost := false;
+  FStyle := [TTextureStyle.MipMaps, TTextureStyle.Dynamic];
+  FContextLostId := TMessageManager.DefaultManager.SubscribeToMessage(TContextLostMessage, ContextLostHandler);
+  FContextResetId := TMessageManager.DefaultManager.SubscribeToMessage(TContextResetMessage, ContextResetHandler);
 end;
 
 destructor TTexture.Destroy;
 begin
-  // https://quality.embarcadero.com/browse/RSP-19687
-  (*
   TMessageManager.DefaultManager.Unsubscribe(TContextLostMessage, FContextLostId);
   TMessageManager.DefaultManager.Unsubscribe(TContextResetMessage, FContextResetId);
-  *)
   TContextManager.DefaultContextClass.FinalizeTexture(Self);
   if FBits <> nil then
     FreeMem(FBits);
   inherited;
 end;
 
-// https://quality.embarcadero.com/browse/RSP-19687
-(*
 procedure TTexture.ContextLostHandler(const Sender: TObject; const Msg: TMessage);
 begin
   if not (TTextureStyle.Volatile in Style) then
@@ -3110,7 +3100,6 @@ begin
       UpdateTexture(FBits, Width * BytesPerPixel);
   end;
 end;
-*)
 
 procedure TTexture.Initialize;
 begin
@@ -3147,11 +3136,8 @@ procedure TTexture.Assign(Source: TPersistent);
 var
   M: TBitmapData;
 begin
-  // https://quality.embarcadero.com/browse/RSP-19687
-  (*
   TMonitor.Enter(Self);
   try
-  *)
     if Source is TBitmap then
     begin
       if FHandle <> 0 then
@@ -3178,21 +3164,15 @@ begin
       UpdateTexture(TBitmapSurface(Source).Bits, TBitmapSurface(Source).Pitch);
     end else
       inherited ;
-  // https://quality.embarcadero.com/browse/RSP-19687
-  (*
   finally
     TMonitor.Exit(Self);
   end;
-  *)
 end;
 
 procedure TTexture.UpdateTexture(const Bits: Pointer; const Pitch: Integer);
 begin
-  // https://quality.embarcadero.com/browse/RSP-19687
-  (*
   TMonitor.Enter(Self);
   try
-  *)
     if not (TTextureStyle.Volatile in Style) then
       if TContextStyle.Fragile in TContextManager.DefaultContextClass.Style then
       begin
@@ -3201,12 +3181,9 @@ begin
         Move(Bits^, FBits^, Pitch * Height);
       end;
     TContextManager.DefaultContextClass.UpdateTexture(Self, Bits, Pitch);
-  // https://quality.embarcadero.com/browse/RSP-19687
-  (*
   finally
     TMonitor.Exit(Self);
   end;
-  *)
 end;
 
 function TTexture.GetBytesPerPixel: Integer;
@@ -3243,20 +3220,14 @@ end;
 
 procedure TTexture.SetSize(const AWidth, AHeight: Integer);
 begin
-  // https://quality.embarcadero.com/browse/RSP-19687
-  (*
   TMonitor.Enter(Self);
   try
-  *)
     Finalize;
     FWidth := AWidth;
     FHeight := AHeight;
-  // https://quality.embarcadero.com/browse/RSP-19687
-  (*
   finally
     TMonitor.Exit(Self);
   end;
-  *)
 end;
 
 procedure TTexture.SetStyle(const Value: TTextureStyles);

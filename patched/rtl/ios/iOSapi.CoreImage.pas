@@ -218,25 +218,8 @@ type
   end;
   TCIFaceFeature = class(TOCGenericImport<CIFaceFeatureClass, CIFaceFeature>)  end;
 
-function kCIInputImageKey: NSString; // https://quality.embarcadero.com/browse/RSP-19878
-function kCIInputRadiusKey: NSString; // https://quality.embarcadero.com/browse/RSP-19878
+
 
 implementation
-
-// https://quality.embarcadero.com/browse/RSP-19878
-const
-  CoreImageFwk: string = '/System/Library/Frameworks/CoreImage.framework/CoreImage';
-
-// https://quality.embarcadero.com/browse/RSP-19878
-function kCIInputImageKey: NSString;
-begin
-  result := CocoaNSStringConst(CoreImageFwk, 'kCIInputImageKey');
-end;
-
-// https://quality.embarcadero.com/browse/RSP-19878
-function kCIInputRadiusKey: NSString;
-begin
-  result := CocoaNSStringConst(CoreImageFwk, 'kCIInputRadiusKey');
-end;
 
 end.

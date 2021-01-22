@@ -1385,17 +1385,6 @@ const
   {$EXTERNALSYM UIUserInterfaceSizeClassCompact}
   UIUserInterfaceSizeClassRegular = 2;
   {$EXTERNALSYM UIUserInterfaceSizeClassRegular}
-  UIAlertActionStyleDefault = 0;                    // https://quality.embarcadero.com/browse/RSP-24740
-  {$EXTERNALSYM UIAlertActionStyleDefault}          // https://quality.embarcadero.com/browse/RSP-24740
-  UIAlertActionStyleCancel = 1;                     // https://quality.embarcadero.com/browse/RSP-24740
-  {$EXTERNALSYM UIAlertActionStyleCancel}           // https://quality.embarcadero.com/browse/RSP-24740
-  UIAlertActionStyleDestructive = 2;                // https://quality.embarcadero.com/browse/RSP-24740
-  {$EXTERNALSYM UIAlertActionStyleDestructive}      // https://quality.embarcadero.com/browse/RSP-24740
-  UIAlertControllerStyleAlert = 1;                  // https://quality.embarcadero.com/browse/RSP-24740
-  {$EXTERNALSYM UIAlertControllerStyleAlert}        // https://quality.embarcadero.com/browse/RSP-24740
-  UIAlertControllerStyleActionSheet = 0;            // https://quality.embarcadero.com/browse/RSP-24740
-  {$EXTERNALSYM UIAlertControllerStyleActionSheet}  // https://quality.embarcadero.com/browse/RSP-24740
-
 
 type
   // ===== Forward declarations =====
@@ -1604,8 +1593,6 @@ type
   UITraitCollection = interface;
   UIPrinter = interface;
   UIPrinterPickerController = interface;
-  UIAlertAction = interface; // https://quality.embarcadero.com/browse/RSP-24740
-  UIAlertController = interface; // https://quality.embarcadero.com/browse/RSP-24740
 
   // ===== Framework typedefs =====
 {$M+}
@@ -1788,9 +1775,6 @@ type
   {$EXTERNALSYM UIPrinterJobTypes}
   UIPrinterPickerCompletionHandler = procedure(param1: UIPrinterPickerController; param2: Boolean; param3: NSError)
     of object;
-  UIAlertActionStyle = NSInteger; // https://quality.embarcadero.com/browse/RSP-24740
-  TUIAlertActionHandler = procedure(action: UIAlertAction) of object; // https://quality.embarcadero.com/browse/RSP-24740
-  UIAlertControllerStyle = NSInteger; // https://quality.embarcadero.com/browse/RSP-24740
 
   // ===== Interface declarations =====
 
@@ -3729,7 +3713,6 @@ type
   end;
   TUIStoryboardPopoverSegue = class(TOCGenericImport<UIStoryboardPopoverSegueClass, UIStoryboardPopoverSegue>)  end;
 
-  TUIBackgroundTaskExpirationHandler = procedure of object; // https://quality.embarcadero.com/browse/RSP-18656
   UIApplicationClass = interface(UIResponderClass)
     ['{EB8D5CD5-75CA-469F-B1B9-3A32D640B450}']
     {class} function sharedApplication: Pointer; cdecl;
@@ -3749,7 +3732,7 @@ type
     function currentUserNotificationSettings: UIUserNotificationSettings; cdecl;
     function delegate: UIApplicationDelegate; cdecl;
     function enabledRemoteNotificationTypes: Pointer; cdecl;
-    procedure endBackgroundTask(identifier: UIBackgroundTaskIdentifier); cdecl; // https://quality.embarcadero.com/browse/RSP-18656
+    procedure endBackgroundTask(identifier: Pointer); cdecl;
     procedure endIgnoringInteractionEvents; cdecl;
     procedure endReceivingRemoteControlEvents; cdecl;
     function isIdleTimerDisabled: Boolean; cdecl;
@@ -3786,9 +3769,6 @@ type
     procedure unregisterForRemoteNotifications; cdecl;
     function userInterfaceLayoutDirection: NSInteger; cdecl;
     function windows: NSArray; cdecl;
-    procedure setMinimumBackgroundFetchInterval(minimumBackgroundFetchInterval: NSTimeInterval); cdecl; // https://quality.embarcadero.com/browse/RSP-18656
-    function beginBackgroundTaskWithExpirationHandler(handler: TUIBackgroundTaskExpirationHandler): UIBackgroundTaskIdentifier; cdecl; // https://quality.embarcadero.com/browse/RSP-18656
-    function isRegisteredForRemoteNotifications: boolean; cdecl; // https://quality.embarcadero.com/browse/RSP-18670
   end;
   TUIApplication = class(TOCGenericImport<UIApplicationClass, UIApplication>)  end;
 
@@ -4763,8 +4743,6 @@ type
     procedure unmarkText; cdecl;
     { UITextInput }
     function markedTextRange: UITextRange; cdecl;
-    procedure setTextContainerInset(textContainerInset: UIEdgeInsets); cdecl; // << https://quality.embarcadero.com/browse/RSP-18314
-    function textContainerInset: UIEdgeInsets; cdecl; // << https://quality.embarcadero.com/browse/RSP-18314
   end;
   TUITextView = class(TOCGenericImport<UITextViewClass, UITextView>)  end;
 
@@ -5035,8 +5013,6 @@ type
     procedure setTextColor(textColor: UIColor); cdecl;
     procedure setTintAdjustmentMode(mode: UIViewTintAdjustmentMode); cdecl;
     procedure setAttributedText(attributedText: NSAttributedString); cdecl;
-    procedure setDefaultTextAttributes(defaultTextAttributes: NSDictionary); cdecl; // https://quality.embarcadero.com/browse/RSP-16971
-    procedure setAttributedPlaceholder(attributedPlaceholder: NSAttributedString); cdecl; // https://quality.embarcadero.com/browse/RSP-16971
     function text: Pointer; cdecl;
     function textAlignment: UITextAlignment; cdecl;
     function textColor: UIColor; cdecl;
@@ -6835,43 +6811,6 @@ type
       willRepositionPopoverToRect: Pointer; inView: UIView); cdecl;
   end;
 
-  // https://quality.embarcadero.com/browse/RSP-24740
-  UIAlertActionClass = interface(NSObjectClass)
-    ['{C5BB4A76-81D4-4ADE-BB75-09B7D8966B5A}']
-    { class } function actionWithTitle(title: NSString; style: UIAlertActionStyle; handler: TUIAlertActionHandler): Pointer { instancetype }; cdecl;
-  end;
-  UIAlertAction = interface(NSObject)
-    ['{890CEEA6-1381-434F-83CB-C885655A3592}']
-    function title: NSString; cdecl;
-    function style: UIAlertActionStyle; cdecl;
-    procedure setEnabled(enabled: Boolean); cdecl;
-    function isEnabled: Boolean; cdecl;
-  end;
-  TUIAlertAction = class(TOCGenericImport<UIAlertActionClass, UIAlertAction>) end;
-  PUIAlertAction = Pointer;
-
-  // https://quality.embarcadero.com/browse/RSP-24740
-  UIAlertControllerClass = interface(UIViewControllerClass)
-    ['{5FB1577B-555E-4D40-A026-16DD52B90EBF}']
-    { class } function alertControllerWithTitle(title: NSString; message: NSString; preferredStyle: UIAlertControllerStyle): Pointer { instancetype }; cdecl;
-  end;
-  UIAlertController = interface(UIViewController)
-    ['{59400341-B161-4E86-8F4F-D621A0C30384}']
-    procedure addAction(action: UIAlertAction); cdecl;
-    function actions: NSArray; cdecl;
-    procedure setPreferredAction(preferredAction: UIAlertAction); cdecl;
-    function preferredAction: UIAlertAction; cdecl;
-    //procedure addTextFieldWithConfigurationHandler(configurationHandler: TUIKitConfigurationHandler); cdecl;
-    function textFields: NSArray; cdecl;
-    procedure setTitle(title: NSString); cdecl;
-    function title: NSString; cdecl;
-    procedure setMessage(message: NSString); cdecl;
-    function message: NSString; cdecl;
-    function preferredStyle: UIAlertControllerStyle; cdecl;
-  end;
-  TUIAlertController = class(TOCGenericImport<UIAlertControllerClass, UIAlertController>) end;
-  PUIAlertController = Pointer;
-
   // ===== Exported string consts =====
 
 function NSFontAttributeName: NSString;
@@ -7091,13 +7030,7 @@ function UIKeyboardDidChangeFrameNotification: NSString;
 function UIKeyboardCenterBeginUserInfoKey: NSString;
 function UIKeyboardCenterEndUserInfoKey: NSString;
 function UIKeyboardBoundsUserInfoKey: NSString;
-function UIApplicationOpenURLOptionsAnnotationKey: NSString;  // https://quality.embarcadero.com/browse/RSP-18013
-function UIApplicationOpenURLOptionsSourceApplicationKey: NSString; // https://quality.embarcadero.com/browse/RSP-18013
-function UIApplicationOpenSettingsURLString: NSString; // https://quality.embarcadero.com/browse/RSP-18013
-function UIBackgroundTaskInvalid: UIBackgroundTaskIdentifier; // https://quality.embarcadero.com/browse/RSP-18656
-function UIApplicationBackgroundFetchIntervalNever: NSTimeInterval; // https://quality.embarcadero.com/browse/RSP-18662
-function UIApplicationBackgroundFetchIntervalMinimum: NSTimeInterval; // https://quality.embarcadero.com/browse/RSP-18662
-function UIImagePickerControllerPHAsset: NSString; // https://quality.embarcadero.com/browse/RSP-21373
+
 
 // ===== External functions =====
 const
@@ -7234,16 +7167,10 @@ implementation
 {$IF defined(IOS) and NOT defined(CPUARM)}
 
 uses
-  System.SysUtils,
   Posix.Dlfcn;
 
 var
   UIKitModule: THandle;
-
-{$ELSE}
-
-uses
-  System.SysUtils;
 
 {$ENDIF IOS}
 
@@ -8421,67 +8348,6 @@ end;
 function UIKeyboardBoundsUserInfoKey: NSString;
 begin
   Result := CocoaNSStringConst(UIKitFwk, 'UIKeyboardBoundsUserInfoKey');
-end;
-
-// https://quality.embarcadero.com/browse/RSP-18013
-function UIApplicationOpenURLOptionsAnnotationKey: NSString;
-begin
-  if (TOSVersion.Check(9, 0)) then
-    Result := CocoaNSStringConst(UIKitFwk, 'UIApplicationOpenURLOptionsAnnotationKey')
-  else
-    Result := nil;
-end;
-
-// https://quality.embarcadero.com/browse/RSP-18013
-function UIApplicationOpenURLOptionsSourceApplicationKey: NSString;
-begin
-  if (TOSVersion.Check(9, 0)) then
-    Result := CocoaNSStringConst(UIKitFwk, 'UIApplicationOpenURLOptionsSourceApplicationKey')
-  else
-    Result := nil;
-end;
-
-// https://quality.embarcadero.com/browse/RSP-18013
-function UIApplicationOpenSettingsURLString: NSString;
-begin
-  if (TOSVersion.Check(8, 0)) then
-    Result := CocoaNSStringConst(UIKitFwk, 'UIApplicationOpenSettingsURLString')
-  else
-    Result := nil;
-end;
-
-// https://quality.embarcadero.com/browse/RSP-18656
-function UIBackgroundTaskInvalid: UIBackgroundTaskIdentifier;
-begin
-  Result := CocoaIntegerConst(UIKitFwk, 'UIBackgroundTaskInvalid');
-end;
-
-// https://quality.embarcadero.com/browse/RSP-18662
-function UIApplicationBackgroundFetchIntervalNever: NSTimeInterval;
-var Obj: Pointer;
-begin
-  Obj := CocoaPointerConst(UIKitFwk, 'UIApplicationBackgroundFetchIntervalNever');
-  if Obj <> nil then
-    Result := double(Obj^)
-  else
-    Result := 0;
-end;
-
-// https://quality.embarcadero.com/browse/RSP-18662
-function UIApplicationBackgroundFetchIntervalMinimum: NSTimeInterval;
-var Obj: Pointer;
-begin
-  Obj := CocoaPointerConst(UIKitFwk, 'UIApplicationBackgroundFetchIntervalMinimum');
-  if Obj <> nil then
-    Result := double(Obj^)
-  else
-    Result := 0;
-end;
-
-// https://quality.embarcadero.com/browse/RSP-21373
-function UIImagePickerControllerPHAsset: NSString;
-begin
-  Result := CocoaNSStringConst(UIKitFwk, 'UIImagePickerControllerPHAsset');
 end;
 
 {$IF defined(IOS) and NOT defined(CPUARM)}

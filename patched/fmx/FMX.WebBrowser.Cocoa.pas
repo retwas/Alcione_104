@@ -130,7 +130,6 @@ type
 
   TCommonWebBrowserService = class(TInterfacedObject, ICustomBrowser)
   private
-    [Weak] FForm: TCommonCustomForm; // https://quality.embarcadero.com/browse/RSP-24736
     FWebView: INativeWebView;
     FURL: string;
     FWebControl: TCustomWebBrowser;
@@ -148,7 +147,6 @@ type
     procedure Hide;
     procedure PrepareForDestruction;
     procedure UpdateContentFromControl;
-    procedure RootChanged(const aRoot: IRoot); // https://quality.embarcadero.com/browse/RSP-24736
     procedure DoNavigate(const URL: string);
     procedure DoGoBack;
     procedure DoGoForward;
@@ -367,8 +365,8 @@ end;
 destructor TCommonWebBrowserService.Destroy;
 begin
   {$IFDEF IOS}
-    if (fForm <> nil) and (fForm.Handle <> nil) and (FWebControl <> nil) then //https://quality.embarcadero.com/browse/RSP-24736
-      WindowHandleToPlatform(fForm.Handle).ZOrderManager.RemoveLink(FWebControl); //https://quality.embarcadero.com/browse/RSP-24736
+    if (FWebControl <> nil) and (FWebControl.Root is TCommonCustomForm) then
+      WindowHandleToPlatform(TCommonCustomForm(FWebControl.Root).Handle).ZOrderManager.RemoveLink(FWebControl);
     if FWebView.isLoading then
       FWebView.stopLoading;
     FWebView.setDelegate(nil);
@@ -464,6 +462,7 @@ end;
 
 procedure TCommonWebBrowserService.UpdateContentFromControl;
 var
+  Form: TCommonCustomForm;
   {$IFDEF IOS}
   ZOrderManager: TiOSZOrderManager;
   {$ELSE}
@@ -474,10 +473,12 @@ begin
   if FWebView <> nil then
   begin
     if (FWebControl <> nil) and not (csDesigning in FWebControl.ComponentState) and
-       (fForm <> nil) and (fForm.Handle <> nil) then //https://quality.embarcadero.com/browse/RSP-24736
+       (FWebControl.Root is TCommonCustomForm) then
     begin
+      Form := TCommonCustomForm(FWebControl.Root);
       {$IFDEF IOS}
-      ZOrderManager := WindowHandleToPlatform(fForm.Handle).ZOrderManager; //https://quality.embarcadero.com/browse/RSP-24736
+      ZOrderManager := WindowHandleToPlatform(Form.Handle).ZOrderManager;
+      ZOrderManager.AddOrSetLink(FWebControl, FWebView, nil);
       ZOrderManager.UpdateOrderAndBounds(FWebControl);
       {$ELSE}
       Bounds := TRectF.Create(0,0,FWebControl.Width,FWebControl.Height);
@@ -496,24 +497,6 @@ begin
     else
       FWebView.setHidden(True);
   end;
-end;
-
-// https://quality.embarcadero.com/browse/RSP-24736
-procedure TCommonWebBrowserService.RootChanged(const aRoot: IRoot);
-begin
-  {$IFDEF IOS}
-  // Changing root for native control means changing ZOrderManager, because one form owns ZOrderManager.
-  // So we need to remove itself from old one and add to new one.
-  if (fForm <> nil) and (fForm.Handle <> nil) and (FWebControl <> nil) then WindowHandleToPlatform(fForm.Handle).ZOrderManager.RemoveLink(FWebControl);
-  {$ENDIF}
-
-  if aRoot is TCommonCustomForm then FForm := TCommonCustomForm(aRoot)
-  else FForm := nil;
-
-  {$IFDEF IOS}
-  if (fForm <> nil) and (fForm.Handle <> nil) and (FWebControl <> nil) then WindowHandleToPlatform(fForm.Handle).ZOrderManager.AddOrSetLink(FWebControl, FWebView, nil);
-  {$ENDIF}
-  UpdateContentFromControl;
 end;
 
 { TCommonWBService }

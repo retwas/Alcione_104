@@ -1074,11 +1074,9 @@ begin
   FUndeterminedMode := True;
   InitArrayPointers;
 
-  //https://quality.embarcadero.com/browse/RSP-28136
-  //StepSize := FThickness;
-  //if StepSize < 2 then
-  //  StepSize := 2;
-  StepSize := 1;
+  StepSize := FThickness;
+  if StepSize < 2 then
+    StepSize := 2;
 
   CurIndex := 0;
 

@@ -660,7 +660,6 @@ type
     procedure unregisterGnssMeasurementsCallback(callback: JGnssMeasurementsEvent_Callback); cdecl;
     procedure unregisterGnssNavigationMessageCallback(callback: JGnssNavigationMessage_Callback); cdecl;
     procedure unregisterGnssStatusCallback(callback: JGnssStatus_Callback); cdecl;
-    function isLocationEnabled: boolean; cdecl; // https://quality.embarcadero.com/browse/RSP-21365
   end;
   TJLocationManager = class(TJavaGenericImport<JLocationManagerClass, JLocationManager>) end;
 

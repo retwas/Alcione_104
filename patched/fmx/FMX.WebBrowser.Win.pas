@@ -69,7 +69,6 @@ type
     procedure SetWebBrowserControl(const AValue: TCustomWebBrowser);
     function GetVisible: Boolean;
     procedure UpdateContentFromControl;
-    procedure RootChanged(const aRoot: IRoot); // https://quality.embarcadero.com/browse/RSP-24736
     procedure Navigate;
     procedure Reload;
     procedure Stop;
@@ -480,11 +479,6 @@ begin
       ZOrderManager.UpdateOrderAndBounds(FWebControl);
     end;
   end;
-end;
-
-// https://quality.embarcadero.com/browse/RSP-24736
-procedure TWindowsWebBrowserService.RootChanged(const aRoot: IRoot);
-begin
 end;
 
 procedure TWindowsWebBrowserService.WBCommandStateChange(Sender: TObject; Command: Integer; Enable: WordBool);

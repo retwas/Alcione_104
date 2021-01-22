@@ -40,7 +40,6 @@ type
     function GetParent: TFmxObject;
     function GetVisible : Boolean;
     procedure UpdateContentFromControl;
-    procedure RootChanged(const aRoot: IRoot); // https://quality.embarcadero.com/browse/RSP-24736
     procedure Navigate;
     procedure Reload;
     procedure Stop;
@@ -54,7 +53,7 @@ type
     /// <summary>
     ///   Method should be called before destruction of native control
     /// </summary>
-    procedure PrepareForDestruction;
+    procedure PrepareForDestruction;                                           
     property URL: string read GetURL write SetURL;
     property EnableCaching: Boolean read GetEnableCaching write SetEnableCaching;
     property CanGoBack: Boolean read GetCanGoBack;
@@ -96,7 +95,6 @@ type
     procedure AncestorVisibleChanged(const Visible: Boolean); override;
     procedure ParentChanged; override;
     procedure DoAbsoluteChanged; override;
-    procedure DoRootChanged; override; // https://quality.embarcadero.com/browse/RSP-24736
     procedure Move; override;
     procedure Resize; override;
     procedure Paint; override;
@@ -246,14 +244,6 @@ begin
   inherited;
   if FWeb <> nil then
     FWeb.UpdateContentFromControl;
-end;
-
-//https://quality.embarcadero.com/browse/RSP-24736
-procedure TCustomWebBrowser.DoRootChanged;
-begin
-  inherited;
-  if FWeb <> nil then
-    FWeb.RootChanged(root);
 end;
 
 procedure TCustomWebBrowser.FailLoadingWithError;

@@ -113,7 +113,7 @@ type
     /// <summary>Register a class to create hint instances. When a new THint instance is needed, the registered classes are invoked
     /// to create the needed instance.</summary>
     class procedure RegisterClass(const AClass: THintClass);
-    /// <summary>Returns an instance created by the first available registered class. This method can return nil if there are no classes
+    /// <summary>Returns an instance created by the first available registered class. This method can return nil if there are no classes 
     /// registered or none of the registered classes can create a THint instance.</summary>
     class function CreateNewInstance(const AHandle: TWindowHandle): THint;
     /// <summary>Returns True if there are some THint class registered.</summary>
@@ -506,11 +506,6 @@ type
     procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual;
     procedure MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handled: Boolean); virtual;
     procedure MouseClick(Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual;
-    procedure ChildrenMouseDown(const AObject: TControl; Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; // https://quality.embarcadero.com/browse/RSP-24397
-    procedure ChildrenMouseMove(const AObject: TControl; Shift: TShiftState; X, Y: Single); virtual; // https://quality.embarcadero.com/browse/RSP-24397
-    procedure ChildrenMouseUp(const AObject: TControl; Button: TMouseButton; Shift: TShiftState; X, Y: Single); virtual; // https://quality.embarcadero.com/browse/RSP-24397
-    procedure ChildrenMouseEnter(const AObject: TControl); virtual; // https://quality.embarcadero.com/browse/RSP-24397
-    procedure ChildrenMouseLeave(const AObject: TControl); virtual; // https://quality.embarcadero.com/browse/RSP-24397
     procedure KeyDown(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); virtual;
     procedure KeyUp(var Key: Word; var KeyChar: WideChar; Shift: TShiftState); virtual;
     procedure DialogKey(var Key: Word; Shift: TShiftState); virtual;
@@ -2203,17 +2198,13 @@ var
   TabStop: IControl;
   ChildControl: TControl;
   NeedRepaint: Boolean;
-  i: integer; // https://quality.embarcadero.com/browse/RSP-21013
 begin
   DisableDisappear := True;
   try
     if AObject is TControl then
     begin
       ChildControl := TControl(AObject);
-      //https://quality.embarcadero.com/browse/RSP-21013
-      //ChildControl.FUpdating := FUpdating;
-      for I := 1 to FUpdating do
-        ChildControl.beginUpdate;
+      ChildControl.FUpdating := FUpdating;
     end
     else
       ChildControl := nil;
@@ -2253,8 +2244,7 @@ begin
         ChildControl.TempCanvas := TempCanvas;
       if FInPaintTo then
         ChildControl.FInPaintTo := True;
-      //https://quality.embarcadero.com/browse/RSP-21013
-      //ChildControl.FUpdating := FUpdating;
+      ChildControl.FUpdating := FUpdating;
       if not FSimpleTransform then
         ChildControl.FSimpleTransform := False;
       ChildControl.RecalcEnabled;
@@ -2284,11 +2274,8 @@ procedure TControl.DoRemoveObject(const AObject: TFmxObject);
   var
     I: Integer;
   begin
-    // https://quality.embarcadero.com/browse/RSP-21013
-    if (not (csDestroying in ComponentState)) and
-       (not (csDestroying in AControl.ComponentState)) then
-      for I := 1 to FUpdating do
-        AControl.EndUpdate;
+    for I := 1 to AControl.FUpdating do
+      AControl.EndUpdate;
   end;
 
 var
@@ -3645,7 +3632,7 @@ begin
   Result := Touch.InteractiveGestures;
   if Result = [] then
     if (Parent <> nil) and Supports(Parent, IGestureControl, LGObj) then
-      Result := LGObj.GetListOfInteractiveGestures;
+      Result := LGObj.GetListOfInteractiveGestures;                 
 end;
 
 function TControl.GetLocked: Boolean;
@@ -4091,7 +4078,6 @@ begin
   ApplyTriggerEffect(Self, 'IsMouseOver');
   if Assigned(FOnMouseEnter) then
     FOnMouseEnter(Self);
-  if fparentControl <> nil then fparentControl.ChildrenMouseEnter(Self); // https://quality.embarcadero.com/browse/RSP-24397
 end;
 
 procedure TControl.DoMouseLeave;
@@ -4101,7 +4087,6 @@ begin
   ApplyTriggerEffect(Self, 'IsMouseOver');
   if Assigned(FOnMouseLeave) then
     FOnMouseLeave(Self);
-  if fparentControl <> nil then fparentControl.ChildrenMouseLeave(Self); // https://quality.embarcadero.com/browse/RSP-24397
 end;
 
 function TControl.GetCanFocus: Boolean;
@@ -4367,7 +4352,7 @@ begin
     end;
 
   if not Handled and (FParent <> nil) and (EventInfo.GestureID <> sgiNoGesture) and Supports(Parent, IGestureControl, LGObj) then
-    LGObj.CMGesture(EventInfo);
+    LGObj.CMGesture(EventInfo);                  
 end;
 
 procedure TControl.DblClick;
@@ -4476,7 +4461,6 @@ begin
 
   if Assigned(FOnMouseDown) then
     FOnMouseDown(Self, Button, Shift, X, Y);
-  if fparentControl <> nil then fparentControl.ChildrenMouseDown(Self, Button, Shift, X, Y); // https://quality.embarcadero.com/browse/RSP-24397
   if FAutoCapture then
     Capture;
   if (ssDouble in Shift) then
@@ -4496,7 +4480,6 @@ procedure TControl.MouseMove(Shift: TShiftState; X, Y: Single);
 begin
   if Assigned(FOnMouseMove) then
     FOnMouseMove(Self, Shift, X, Y);
-  if fparentControl <> nil then fparentControl.ChildrenMouseMove(Self, Shift, X, Y); // https://quality.embarcadero.com/browse/RSP-24397
 end;
 
 procedure TControl.MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Single);
@@ -4505,7 +4488,6 @@ begin
 
   if Assigned(FOnMouseUp) then
     FOnMouseUp(Self, Button, Shift, X, Y);
-  if fparentControl <> nil then fparentControl.ChildrenMouseUp(Self, Button, Shift, X, Y); // https://quality.embarcadero.com/browse/RSP-24397
   if FPressed then
   begin
     FPressed := False;
@@ -4518,41 +4500,6 @@ procedure TControl.MouseWheel(Shift: TShiftState; WheelDelta: Integer; var Handl
 begin
   if Assigned(FOnMouseWheel) then
     FOnMouseWheel(Self, Shift, WheelDelta, Handled)
-end;
-
-// https://quality.embarcadero.com/browse/RSP-24397
-procedure TControl.ChildrenMouseDown(const AObject: TControl; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
-begin
-  if fParentControl <> nil then
-    fParentControl.ChildrenMouseDown(AObject, Button, Shift, X, Y);
-end;
-
-// https://quality.embarcadero.com/browse/RSP-24397
-procedure TControl.ChildrenMouseMove(const AObject: TControl; Shift: TShiftState; X, Y: Single);
-begin
-  if fParentControl <> nil then
-    fParentControl.ChildrenMouseMove(AObject, Shift, X, Y);
-end;
-
-// https://quality.embarcadero.com/browse/RSP-24397
-procedure TControl.ChildrenMouseUp(const AObject: TControl; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
-begin
-  if fParentControl <> nil then
-    fParentControl.ChildrenMouseUp(AObject, Button, Shift, X, Y);
-end;
-
-// https://quality.embarcadero.com/browse/RSP-24397
-procedure TControl.ChildrenMouseEnter(const AObject: TControl);
-begin
-  if fParentControl <> nil then
-    fParentControl.ChildrenMouseEnter(AObject);
-end;
-
-// https://quality.embarcadero.com/browse/RSP-24397
-procedure TControl.ChildrenMouseLeave(const AObject: TControl);
-begin
-  if fParentControl <> nil then
-    fParentControl.ChildrenMouseLeave(AObject);
 end;
 
 procedure TControl.DragEnter(const Data: TDragObject; const Point: TPointF);
@@ -5974,7 +5921,7 @@ begin
   KillResourceLink;
   if csLoading in ComponentState then
     Exit;
-  Repaint;
+  Repaint;                             
 end;
 
 procedure TStyledControl.AdjustSize;
@@ -7161,7 +7108,7 @@ procedure TTextSettingsInfo.TTextPropLoader.ReadFontFillColor(Reader: TReader);
 var
   LFontColor: TAlphaColor;
 begin
-
+                                                                                          
 {$IFDEF LONGINT64}
   IdentToAlphaColor(Reader.ReadIdent, Integer(LFontColor));
 {$ELSE !LONGINT64}

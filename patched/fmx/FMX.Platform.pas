@@ -417,8 +417,7 @@ type
 
   TPushDeviceTokenData = record
     Token: string;
-    Data: pointer; // https://quality.embarcadero.com/browse/RSP-21539
-    constructor Create(const AToken: string; const AData: pointer = nil); // https://quality.embarcadero.com/browse/RSP-21539
+    constructor Create(const AToken: string);
   end;
   TPushDeviceTokenMessage = class (System.Messaging.TMessage<TPushDeviceTokenData>);
 
@@ -678,10 +677,9 @@ end;
 
 { TPushDeviceTokenData }
 
-constructor TPushDeviceTokenData.Create(const AToken: string; const AData: pointer = nil); // https://quality.embarcadero.com/browse/RSP-21539
+constructor TPushDeviceTokenData.Create(const AToken: string);
 begin
   Token := AToken;
-  Data := AData; // https://quality.embarcadero.com/browse/RSP-21539
 end;
 
 { TPushFailToRegisterData }

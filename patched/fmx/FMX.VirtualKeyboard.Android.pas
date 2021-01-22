@@ -36,7 +36,6 @@ type
   private
     FKeyboardStateListener: TKeyboardStateChangedListener;
     FTransient: Boolean;
-    fVirtualKeyboardVisible: boolean; // https://quality.embarcadero.com/browse/RSP-24737
     procedure RegisterService;
     procedure UnregisterService;
   protected
@@ -83,7 +82,6 @@ end;
 constructor TVirtualKeyboardAndroid.Create;
 begin
   inherited;
-  fVirtualKeyboardVisible := false; // https://quality.embarcadero.com/browse/RSP-24737
   RegisterService;
   FKeyboardStateListener := TKeyboardStateChangedListener.Create(Self);
   MainActivity.getVirtualKeyboard.addOnKeyboardStateChangedListener(FKeyboardStateListener);
@@ -182,7 +180,7 @@ procedure TVirtualKeyboardAndroid.SendNotificationAboutKeyboardEvent(const AVKRe
 var
   Message: TVKStateChangeMessage;
 begin
-  Message := TVKStateChangeMessage.Create(fVirtualKeyboardVisible, AVKRect); // https://quality.embarcadero.com/browse/RSP-24737
+  Message := TVKStateChangeMessage.Create(TVirtualKeyboardState.Visible in VirtualKeyboardState, AVKRect);
   TMessageManager.DefaultManager.SendMessage(Self, Message, True);
 end;
 
@@ -204,8 +202,7 @@ end;
 procedure TKeyboardStateChangedListener.onVirtualKeyboardWillShown;
 begin
   FNeedNotifyAboutFrameChanges := FNeedNotifyAboutFrameChanges or
-                                  not (FKeyboardService.fVirtualKeyboardVisible); // https://quality.embarcadero.com/browse/RSP-24737
-  FKeyboardService.fVirtualKeyboardVisible := True; // https://quality.embarcadero.com/browse/RSP-24737
+                                  not (TVirtualKeyboardState.Visible in FKeyboardService.VirtualKeyboardState);
 end;
 
 procedure TKeyboardStateChangedListener.onVirtualKeyboardFrameChanged(newFrame: JRect);
@@ -215,8 +212,8 @@ begin
   VKRect.TopLeft := ConvertPixelToPoint(TPointF.Create(newFrame.Left, newFrame.Top)).Round;
   VKRect.BottomRight := ConvertPixelToPoint(TPointF.Create(newFrame.Right, newFrame.Bottom)).Round;
 
-  if (FNeedNotifyAboutFrameChanges) or // https://quality.embarcadero.com/browse/RSP-24737
-     (FPreviousVKRect <> VKRect) then // https://quality.embarcadero.com/browse/RSP-24737
+  if (FNeedNotifyAboutFrameChanges or ((MainActivity.getVirtualKeyboard.isVirtualKeyboardShown) and (VKRect.Height > 0)))
+     and (FPreviousVKRect <> VKRect) then
     try
       FKeyboardService.SendNotificationAboutKeyboardEvent(VKRect);
       FPreviousVKRect := VKRect;
@@ -228,8 +225,7 @@ end;
 procedure TKeyboardStateChangedListener.onVirtualKeyboardWillHidden;
 begin
   FNeedNotifyAboutFrameChanges := FNeedNotifyAboutFrameChanges or
-                                  (FKeyboardService.fVirtualKeyboardVisible); // https://quality.embarcadero.com/browse/RSP-24737
-  FKeyboardService.fVirtualKeyboardVisible := False; // https://quality.embarcadero.com/browse/RSP-24737
+                                  (TVirtualKeyboardState.Visible in FKeyboardService.VirtualKeyboardState);
 end;
 
 end.

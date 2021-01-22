@@ -620,8 +620,6 @@ function kSecAttrKeyClassPrivate: NSString;
 function kSecAttrKeyClassSymmetric: NSString;
 function kSecAttrKeyTypeRSA: NSString;
 function kSecAttrKeyTypeEC: NSString;
-function kSecValueRef: NSString; // https://quality.embarcadero.com/browse/RSP-20279
-function kSecValueData: NSString; // https://quality.embarcadero.com/browse/RSP-20279
 
 
 implementation
@@ -1250,18 +1248,6 @@ end;
 function kSecAttrKeyTypeEC: NSString;
 begin
   result := CocoaNSStringConst(libSecurity, 'kSecAttrKeyTypeEC');
-end;
-
-// https://quality.embarcadero.com/browse/RSP-20279
-function kSecValueRef: NSString;
-begin
-  result := CocoaNSStringConst(libSecurity, 'kSecValueRef');
-end;
-
-// https://quality.embarcadero.com/browse/RSP-20279
-function kSecValueData: NSString;
-begin
-  result := CocoaNSStringConst(libSecurity, 'kSecValueData');
 end;
 
 {$IF defined(IOS) and NOT defined(CPUARM)}
